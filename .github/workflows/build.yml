@@ -45,6 +45,11 @@ jobs:
     - name: npm 의존성 설치
       run: npm ci
     
+    - name: Playwright 브라우저 설치
+      run: npx playwright install --with-deps chromium
+      env:
+        PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 0
+    
     - name: 캐시 Cargo 의존성
       uses: actions/cache@v4
       with:
