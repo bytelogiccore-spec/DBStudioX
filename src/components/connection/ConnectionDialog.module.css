@@ -1,0 +1,305 @@
+.container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    width: 100vw;
+    background: var(--bg-deep);
+    position: relative;
+    overflow: hidden;
+}
+
+.glowPurple {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: rgba(138, 43, 226, 0.15);
+    filter: blur(150px);
+    top: -200px;
+    right: -200px;
+    pointer-events: none;
+}
+
+.glowCyan {
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    border-radius: 50%;
+    background: rgba(0, 217, 255, 0.12);
+    filter: blur(120px);
+    bottom: -150px;
+    left: -150px;
+    pointer-events: none;
+}
+
+.content {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 3rem;
+    max-width: 600px;
+    width: 100%;
+}
+
+/* Logo Section */
+.logoSection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 3rem;
+}
+
+.logoWrapper {
+    width: 120px;
+    height: 120px;
+    border-radius: 32px;
+    background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+    padding: 3px;
+    box-shadow:
+        0 0 60px rgba(0, 217, 255, 0.3),
+        0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    margin-bottom: 1.5rem;
+    animation: float 6s ease-in-out infinite;
+}
+
+.logoInner {
+    width: 100%;
+    height: 100%;
+    border-radius: 29px;
+    background: var(--bg-deep);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.title {
+    font-size: 3rem;
+    font-weight: 900;
+    color: white;
+    letter-spacing: -0.05em;
+    margin: 0 0 0.5rem;
+}
+
+.titleAccent {
+    color: var(--brand-primary);
+}
+
+.subtitle {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+/* Options */
+.options {
+    display: flex;
+    gap: 1rem;
+    width: 100%;
+    margin-bottom: 2rem;
+}
+
+.optionCard {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.optionCard:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(0, 217, 255, 0.3);
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.3);
+}
+
+.optionCard:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.optionIcon {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    background: rgba(0, 217, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--brand-primary);
+    transition: all 0.3s ease;
+}
+
+.optionCard:hover .optionIcon {
+    background: rgba(0, 217, 255, 0.2);
+    box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
+}
+
+.optionIconSecondary {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    background: rgba(138, 43, 226, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--brand-secondary);
+    transition: all 0.3s ease;
+}
+
+.optionCard:hover .optionIconSecondary {
+    background: rgba(138, 43, 226, 0.2);
+    box-shadow: 0 0 20px rgba(138, 43, 226, 0.3);
+}
+
+.optionText {
+    text-align: center;
+}
+
+.optionText h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: white;
+    margin: 0 0 0.25rem;
+}
+
+.optionText p {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+/* Error */
+.error {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 68, 68, 0.1);
+    border: 1px solid rgba(255, 68, 68, 0.2);
+    border-radius: 8px;
+    color: #ff4444;
+    font-size: 12px;
+    margin-bottom: 1rem;
+}
+
+/* Loading */
+.loading {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--brand-primary);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(0, 217, 255, 0.2);
+    border-top-color: var(--brand-primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+/* Recent Section */
+.recentSection {
+    width: 100%;
+    margin-top: 2rem;
+}
+
+.recentTitle {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin: 0 0 1rem;
+}
+
+.recentList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.recentItem {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--text-muted);
+}
+
+.recentItem:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(0, 217, 255, 0.2);
+    color: var(--brand-primary);
+}
+
+.recentInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    text-align: left;
+}
+
+.recentName {
+    font-size: 13px;
+    font-weight: 600;
+    color: white;
+}
+
+.recentPath {
+    font-size: 10px;
+    color: var(--text-muted);
+    max-width: 400px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Footer */
+.footer {
+    margin-top: 3rem;
+}
+
+.footer p {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+/* Animations */
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

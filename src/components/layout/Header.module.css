@@ -1,0 +1,449 @@
+.header {
+    height: var(--header-height);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background: transparent;
+    position: relative;
+    z-index: 10;
+}
+
+.left {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.title {
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
+}
+
+.right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Connection Badge */
+.connectionBadge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.75rem;
+    background: rgba(0, 217, 255, 0.08);
+    border: 1px solid rgba(0, 217, 255, 0.2);
+    border-radius: 8px;
+    font-size: 12px;
+}
+
+.statusDot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--brand-success);
+    box-shadow: 0 0 8px var(--brand-success);
+}
+
+.connectionName {
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+}
+
+.connectionMode {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 11px;
+}
+
+/* Search */
+.searchContainer {
+    position: relative;
+}
+
+.searchBox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 200px;
+}
+
+.searchBox:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.searchBox.searchOpen {
+    border-color: rgba(0, 217, 255, 0.4);
+    min-width: 300px;
+}
+
+.searchIcon {
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.searchPlaceholder {
+    font-size: 12px;
+    color: var(--text-muted);
+    flex: 1;
+}
+
+.searchInput {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 13px;
+    color: var(--text-primary);
+    width: 100%;
+}
+
+.searchInput::placeholder {
+    color: var(--text-muted);
+}
+
+.shortcut {
+    font-size: 10px;
+    color: var(--text-muted);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    flex-shrink: 0;
+}
+
+.searchClose {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.searchClose:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+/* Search Dropdown */
+.searchDropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: rgba(25, 25, 35, 0.98);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 0.5rem;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    z-index: 100;
+    animation: slideDown 0.15s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.searchGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.searchGroup+.searchGroup {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.searchGroupLabel {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.25rem 0.5rem;
+}
+
+.searchItem {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: left;
+}
+
+.searchItem:hover {
+    background: rgba(0, 217, 255, 0.1);
+    color: white;
+}
+
+.searchItem span {
+    font-size: 16px;
+    color: var(--brand-primary);
+    opacity: 0.7;
+}
+
+.divider {
+    height: 32px;
+    width: 1px;
+    background: rgba(255, 255, 255, 0.05);
+    margin: 0 0.5rem;
+}
+
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Icon Button */
+.iconButton {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.iconButton:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.iconButton.active {
+    color: var(--brand-primary);
+    background: rgba(0, 217, 255, 0.1);
+}
+
+.badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    font-size: 10px;
+    font-weight: 600;
+    color: white;
+    background: var(--brand-danger);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Notification Panel */
+.notificationContainer {
+    position: relative;
+}
+
+.notificationPanel {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 360px;
+    max-height: 480px;
+    background: rgba(25, 25, 35, 0.98);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    animation: slideDown 0.15s ease;
+}
+
+.notificationHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 13px;
+    font-weight: 600;
+    color: white;
+}
+
+.notificationActions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.markAllRead {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: var(--brand-primary);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.markAllRead:hover {
+    background: rgba(0, 217, 255, 0.1);
+}
+
+.notificationList {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.5rem;
+}
+
+.notificationList::-webkit-scrollbar {
+    display: none;
+}
+
+.noNotifications {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 3rem 1rem;
+    color: var(--text-muted);
+}
+
+.noNotifications span {
+    font-size: 13px;
+}
+
+.notificationItem {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.notificationItem:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.notificationItem.unread {
+    background: rgba(0, 217, 255, 0.05);
+}
+
+.notifIconSuccess {
+    color: var(--brand-success);
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.notifIconError {
+    color: var(--brand-danger);
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.notifIconWarning {
+    color: var(--brand-warning);
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.notifIconInfo {
+    color: var(--brand-primary);
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.notificationContent {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.notificationTitle {
+    font-size: 12px;
+    font-weight: 600;
+    color: white;
+}
+
+.notificationMessage {
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.notificationTime {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+.notificationFooter {
+    padding: 0.75rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    justify-content: center;
+}
+
+.notificationFooter button {
+    padding: 0.5rem 1rem;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: var(--text-muted);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.notificationFooter button:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+}

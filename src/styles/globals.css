@@ -1,0 +1,289 @@
+/* ============================================
+   DBStudioX Global Styles - Pure CSS Edition
+   ============================================ */
+
+/* ========== CSS Variables (Design Tokens) ========== */
+:root {
+    /* Brand Colors */
+    --brand-primary: #00d9ff;
+    --brand-secondary: #8a2be2;
+    --brand-success: #00ff88;
+    --brand-warning: #ffb800;
+    --brand-error: #ff4444;
+
+    /* Backgrounds (Space Dark Palette) */
+    --bg-deep: #0a0a0c;
+    --bg-main: #0f1115;
+    --bg-panel: rgba(22, 22, 24, 0.7);
+    --bg-frosted: rgba(32, 69, 75, 0.15);
+
+    /* Glassmorphism Styles */
+    --glass-bg: rgba(255, 255, 255, 0.03);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-blur: blur(12px);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+
+    /* Accents & Glows */
+    --accent-glow: 0 0 15px rgba(0, 217, 255, 0.4);
+    --purple-glow: 0 0 20px rgba(138, 43, 226, 0.3);
+
+    /* Text Colors */
+    --text-primary: #f5f8f8;
+    --text-secondary: #8dc4ce;
+    --text-muted: #5c6370;
+
+    /* Layout Constants */
+    --sidebar-width: 240px;
+    --sidebar-collapsed: 64px;
+    --header-height: 56px;
+    --status-bar-height: 24px;
+
+    /* Transitions */
+    --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* AG-Grid Theme */
+    --ag-background-color: transparent;
+    --ag-header-background-color: rgba(255, 255, 255, 0.03);
+    --ag-odd-row-background-color: rgba(255, 255, 255, 0.01);
+    --ag-header-foreground-color: var(--text-secondary);
+    --ag-foreground-color: var(--text-primary);
+    --ag-border-color: var(--glass-border);
+    --ag-font-family: 'Inter', sans-serif;
+    --ag-font-size: 13px;
+    --ag-row-hover-color: rgba(0, 217, 255, 0.05);
+    --ag-selected-row-background-color: rgba(0, 217, 255, 0.1);
+}
+
+/* ========== Reset & Base ========== */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: var(--text-primary);
+    background-color: var(--bg-deep);
+    overflow: hidden;
+    min-height: 100vh;
+}
+
+/* Aurora Background Effect */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+        radial-gradient(circle at 20% 20%, rgba(138, 43, 226, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 80% 80%, rgba(0, 217, 255, 0.08) 0%, transparent 40%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* ========== Scrollbars ========== */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--glass-border);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+/* ========== Utility Classes ========== */
+.glass {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+}
+
+.glass-frosted {
+    background: var(--bg-frosted);
+    border: 1px solid var(--glass-border);
+}
+
+.aurora-bg {
+    background:
+        radial-gradient(circle at 0% 0%, rgba(138, 43, 226, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 100% 100%, rgba(0, 217, 255, 0.1) 0%, transparent 50%),
+        var(--bg-deep);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* AG Grid uses new Theming API (v35+) - styles defined in component */
+
+/* ========== Layout Utilities ========== */
+.w-sidebar {
+    width: var(--sidebar-width);
+}
+
+.h-header {
+    height: var(--header-height);
+}
+
+.h-status-bar {
+    height: var(--status-bar-height);
+}
+
+/* ========== Text Colors ========== */
+.text-primary {
+    color: var(--text-primary);
+}
+
+.text-secondary {
+    color: var(--text-secondary);
+}
+
+.text-muted {
+    color: var(--text-muted);
+}
+
+.text-brand-primary {
+    color: var(--brand-primary);
+}
+
+.text-brand-secondary {
+    color: var(--brand-secondary);
+}
+
+.text-brand-success {
+    color: var(--brand-success);
+}
+
+.text-brand-warning {
+    color: var(--brand-warning);
+}
+
+.text-brand-error {
+    color: var(--brand-error);
+}
+
+/* ========== Background Colors ========== */
+.bg-deep {
+    background-color: var(--bg-deep);
+}
+
+.bg-main {
+    background-color: var(--bg-main);
+}
+
+.bg-panel {
+    background-color: var(--bg-panel);
+}
+
+.bg-brand-primary {
+    background-color: var(--brand-primary);
+}
+
+.bg-brand-success {
+    background-color: var(--brand-success);
+}
+
+.bg-brand-error {
+    background-color: var(--brand-error);
+}
+
+/* ========== Animation Keyframes ========== */
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+/* ========== Material Symbols Icon Font ========== */
+.material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ========== Selection ========== */
+::selection {
+    background-color: var(--brand-primary);
+    color: var(--bg-deep);
+}

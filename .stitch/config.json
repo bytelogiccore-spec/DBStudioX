@@ -1,0 +1,70 @@
+{
+    "$schema": "https://stitch.google.dev/schemas/config.json",
+    "projectName": "DBStudioX",
+    "version": "0.1.0",
+    "theme": {
+        "mode": "dark",
+        "primaryColor": "#00d9ff",
+        "secondaryColor": "#7b2cbf",
+        "backgroundColor": "#0f0f23",
+        "fontFamily": {
+            "sans": "Inter",
+            "mono": "JetBrains Mono"
+        }
+    },
+    "designSystem": {
+        "borderRadius": "8px",
+        "spacing": {
+            "xs": 4,
+            "sm": 8,
+            "md": 16,
+            "lg": 24,
+            "xl": 32
+        },
+        "effects": {
+            "glassmorphism": true,
+            "microAnimations": true,
+            "glowEffects": true
+        }
+    },
+    "components": [
+        "Button",
+        "Card",
+        "Modal",
+        "Input",
+        "Select",
+        "Table",
+        "Tabs",
+        "Sidebar",
+        "Header",
+        "Panel",
+        "Toast"
+    ],
+    "pages": [
+        {
+            "name": "SqlEditor",
+            "description": "SQL query editor with Monaco integration"
+        },
+        {
+            "name": "SchemaExplorer",
+            "description": "Database schema tree browser"
+        },
+        {
+            "name": "PerformanceDashboard",
+            "description": "Real-time performance metrics"
+        },
+        {
+            "name": "QueryHistory",
+            "description": "Query execution history viewer"
+        }
+    ],
+    "export": {
+        "format": "react-typescript",
+        "cssFramework": "vanilla",
+        "outputDir": "../src/components"
+    },
+    "mcp": {
+        "enabled": true,
+        "googleCloudProject": "bytelogiccore-485610"
+    }
+}

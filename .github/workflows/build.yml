@@ -1,0 +1,114 @@
+name: Build Windows Release
+
+on:
+  workflow_dispatch:  # 수동 실행만 가능
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'src/**'
+      - 'src-tauri/**'
+      - 'package.json'
+      - 'next.config.ts'
+      - '.github/workflows/build.yml'
+
+env:
+  CARGO_TERM_COLOR: always
+  NODE_VERSION: '20'
+
+jobs:
+  build-windows:
+    name: Windows 빌드 및 배포
+    runs-on: windows-latest
+    timeout-minutes: 60
+    
+    steps:
+    - name: 저장소 체크아웃
+      uses: actions/checkout@v4
+    
+    - name: Node.js 설치
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+    
+    - name: Rust 설치
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+        targets: x86_64-pc-windows-msvc
+    
+    - name: Tauri CLI 설치
+      run: npm install -g @tauri-apps/cli@latest
+    
+    - name: npm 의존성 설치
+      run: npm ci
+    
+    - name: 캐시 Cargo 의존성
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          src-tauri/target/
+        key: windows-cargo-${{ hashFiles('src-tauri/Cargo.lock') }}
+        restore-keys: |
+          windows-cargo-
+    
+    - name: 캐시 Next.js 빌드
+      uses: actions/cache@v4
+      with:
+        path: |
+          .next/
+          out/
+          node_modules/.cache/
+        key: nextjs-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+        restore-keys: |
+          nextjs-${{ runner.os }}-
+    
+    - name: 프론트엔드 테스트 실행
+      run: npm test
+    
+    - name: Next.js Release 빌드
+      run: npm run build
+      env:
+        NODE_ENV: production
+    
+    - name: Rust 빌드 검증
+      working-directory: src-tauri
+      run: cargo check --release
+    
+    - name: Tauri Windows 빌드
+      run: npm run tauri:build
+      env:
+        TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+        TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+    
+    - name: 빌드 아티팩트 확인
+      shell: pwsh
+      run: |
+        Write-Host "=== 빌드 결과 확인 ==="
+        $buildPath = "src-tauri/target/release/bundle"
+        if (Test-Path $buildPath) {
+          $files = Get-ChildItem -Recurse -File -Path $buildPath
+          Write-Host "✅ 빌드 성공: $($files.Count)개 파일"
+          $files | ForEach-Object {
+            Write-Host "  - $($_.FullName) ($([math]::Round($_.Length / 1MB, 2)) MB)"
+          }
+        } else {
+          Write-Error "❌ 빌드 결과를 찾을 수 없습니다: $buildPath"
+          exit 1
+        }
+    
+    - name: 빌드 아티팩트 업로드
+      uses: actions/upload-artifact@v4
+      with:
+        name: dbstudiox-windows-release
+        path: |
+          src-tauri/target/release/bundle/**/*.exe
+          src-tauri/target/release/bundle/**/*.msi
+        if-no-files-found: error
+        retention-days: 30

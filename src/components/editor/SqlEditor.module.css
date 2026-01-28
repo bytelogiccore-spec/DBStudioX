@@ -1,0 +1,37 @@
+.container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+/* Override Monaco Editor's default background */
+.container :global(.monaco-editor),
+.container :global(.monaco-editor .overflow-guard),
+.container :global(.monaco-editor .monaco-scrollable-element) {
+    background-color: transparent !important;
+}
+
+.container :global(.monaco-editor .margin) {
+    background-color: transparent !important;
+}
+
+.container :global(.monaco-editor .monaco-editor-background) {
+    background-color: transparent !important;
+}
+
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    color: var(--text-muted);
+    font-size: 13px;
+    letter-spacing: 0.05em;
+}

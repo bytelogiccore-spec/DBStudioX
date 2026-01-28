@@ -1,0 +1,77 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Next.js
+.next/
+out/
+build/
+
+# Tauri
+src-tauri/target/
+*.exe
+*.msi
+*.dmg
+*.AppImage
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Test
+coverage/
+.nyc_output/
+
+# Build artifacts
+dist/
+*.tsbuildinfo
+
+# Stitch
+.stitch/cache/
+.stitch/*.tmp
+
+# Temporary files
+*.tmp
+*.temp
+create_folders.ps1
+
+*storybook.log
+storybook-static
+
+# AI 설정 및 설계 문서
+.agent/
+.cursor/
+AGENTS.md
+IMPLEMENTATION_PLAN.md
+dev_log.txt
+docs/PHASE_*.md
+docs/DEVELOPMENT.md
+docs/WIKI.md
+README_KR.md
+
+# 빌드 로그 및 임시 파일
+src-tauri/build_log.txt
+src-tauri/error_log.txt
+src-tauri/check_output.txt
+
+# 개발 관련 없는 문서 (설정 가이드는 유지)
+# docs/GITHUB_SETUP.md - GitHub 설정 가이드는 유지
+# docs/SETUP_COMPLETE.md - 완료 체크리스트는 유지
+# docs/WIKI_ACTIVATION_GUIDE.md - Wiki 활성화 가이드는 유지

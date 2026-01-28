@@ -1,0 +1,231 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(12px);
+    overflow-y: auto;
+}
+
+.container::-webkit-scrollbar {
+    display: none;
+}
+
+/* Hero Section */
+.hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding-top: 4rem;
+    padding-bottom: 3rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background: linear-gradient(to bottom, rgba(0, 217, 255, 0.05), transparent);
+}
+
+.logoWrapper {
+    width: 96px;
+    height: 96px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+    padding: 2px;
+    box-shadow: 0 25px 50px -12px rgba(0, 217, 255, 0.2);
+    margin-bottom: 1.5rem;
+}
+
+.logoInner {
+    width: 100%;
+    height: 100%;
+    border-radius: 22px;
+    background: var(--bg-deep);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.title {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: white;
+    letter-spacing: -0.05em;
+    margin: 0 0 0.5rem;
+}
+
+.titleAccent {
+    color: var(--brand-primary);
+}
+
+.versionBadge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--brand-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.description {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-top: 1rem;
+    max-width: 450px;
+    text-align: center;
+    line-height: 1.6;
+    font-weight: 500;
+}
+
+/* Content */
+.content {
+    max-width: 900px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+    padding-bottom: 6rem;
+}
+
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.sectionTitle {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0;
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(12px);
+    padding: 1.5rem;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.cardText {
+    font-size: 14px;
+    color: var(--text-primary);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.highlight {
+    color: var(--brand-primary);
+    font-weight: 700;
+}
+
+/* Library Grid */
+.libraryGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+@media (max-width: 768px) {
+    .libraryGrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.libraryCard {
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(12px);
+    padding: 1.25rem;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.libraryCard:hover {
+    border-color: rgba(0, 217, 255, 0.3);
+}
+
+.libraryHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.libraryName {
+    font-size: 14px;
+    font-weight: 700;
+    color: white;
+    margin: 0;
+    transition: color 0.2s ease;
+}
+
+.libraryCard:hover .libraryName {
+    color: var(--brand-primary);
+}
+
+.licenseBadge {
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--text-muted);
+    transition: all 0.2s ease;
+}
+
+.libraryCard:hover .licenseBadge {
+    background: rgba(0, 217, 255, 0.1);
+    color: var(--brand-primary);
+}
+
+.libraryDesc {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin: 0 0 1rem;
+}
+
+.viewSource {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 10px;
+    font-weight: 700;
+    color: rgba(0, 217, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    transition: color 0.2s ease;
+}
+
+.libraryCard:hover .viewSource {
+    color: var(--brand-primary);
+}
+
+/* Footer */
+.footer {
+    padding-top: 3rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    text-align: center;
+}
+
+.footer p {
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-weight: 500;
+    margin: 0;
+}

@@ -1,0 +1,192 @@
+.container {
+    padding: 1rem;
+    color: var(--text-primary);
+}
+
+.steps {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    padding: 0 2rem;
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-tertiary);
+}
+
+.step.active {
+    color: var(--brand-primary);
+}
+
+.stepIcon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+}
+
+.active .stepIcon {
+    background: var(--brand-primary);
+    color: white;
+    border-color: var(--brand-primary);
+}
+
+.line {
+    flex: 1;
+    height: 2px;
+    background: var(--border-subtle);
+    margin: 0 1rem;
+    margin-top: -1.5rem;
+}
+
+.content {
+    min-height: 400px;
+}
+
+.intro {
+    display: flex;
+    justify-content: center;
+}
+
+.introCard {
+    text-align: center;
+    max-width: 500px;
+    padding: 2rem;
+}
+
+.introCard h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.introCard p {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+}
+
+.featureList {
+    text-align: left;
+    display: inline-block;
+    color: var(--text-secondary);
+    list-style: disc;
+    padding-left: 1.5rem;
+}
+
+.featureList li {
+    margin-bottom: 0.5rem;
+}
+
+.configForm {
+    animation: fadeIn 0.3s ease;
+}
+
+.label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.infoBox {
+    background: rgba(0, 217, 255, 0.05);
+    border: 1px solid rgba(0, 217, 255, 0.1);
+    padding: 1rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    color: var(--brand-primary);
+    font-size: 0.875rem;
+}
+
+.results {
+    animation: fadeIn 0.3s ease;
+}
+
+.summaryGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.summaryCard {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-subtle);
+    padding: 1.5rem;
+    border-radius: 12px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+}
+
+.count {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--brand-primary);
+}
+
+.summaryCard .label {
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.sqlPreview {
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--bg-deep);
+}
+
+.previewHeader {
+    padding: 0.75rem 1rem;
+    background: var(--bg-tertiary);
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.previewTitle {
+    display: flex;
+    align-items: center;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.editorContainer {
+    height: 300px;
+}
+
+.footer {
+    display: flex;
+    width: 100%;
+}
+
+.spacer {
+    flex: 1;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
