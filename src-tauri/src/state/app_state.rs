@@ -140,6 +140,11 @@ impl AppState {
         Ok(())
     }
 
+    /// Get a specific transaction
+    pub fn get_transaction(&self, transaction_id: &str) -> Option<TransactionInfo> {
+        self.transactions.read().get(transaction_id).cloned()
+    }
+
     /// Get active transactions for a connection
     pub fn get_transactions(&self, connection_id: &str) -> Vec<TransactionInfo> {
         self.transactions
