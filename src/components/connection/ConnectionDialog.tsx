@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Database, FolderOpen, Plus, X, HardDrive } from 'lucide-react';
 import { useDatabaseStore } from '@/stores/databaseStore';
+import { useRecentStore } from '@/stores/recentStore';
 import { dbService } from '@/services/dbService';
 import FileDialog from '@/components/ui/FileDialog';
 import { useFileDialog, FILE_FILTERS } from '@/hooks/useFileDialog';
@@ -10,23 +11,14 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import styles from './ConnectionDialog.module.css';
 
-interface RecentConnection {
-    id: string;
-    name: string;
-    path: string;
-    lastOpened: Date;
-}
-
 const ConnectionDialog: React.FC = () => {
     const { setActiveConnection } = useDatabaseStore();
+    const { connections: recentConnections, addConnection: addRecentConnection } = useRecentStore();
     const [isConnecting, setIsConnecting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     // Custom file dialog hook
     const fileDialog = useFileDialog();
-
-    // TODO: Load from localStorage or a store
-    const recentConnections: RecentConnection[] = [];
 
     const handleOpenFile = async () => {
         // Open custom file dialog
@@ -68,6 +60,10 @@ const ConnectionDialog: React.FC = () => {
                     path: path,
                     isConnected: true,
                     createdAt: new Date(),
+                });
+                addRecentConnection({
+                    name: fileName,
+                    path: path,
                 });
             }
         } catch (err: any) {
@@ -155,7 +151,11 @@ const ConnectionDialog: React.FC = () => {
                         <h4 className={styles.recentTitle}>Recent Connections</h4>
                         <div className={styles.recentList}>
                             {recentConnections.map((conn) => (
-                                <button key={conn.id} className={styles.recentItem}>
+                                <button
+                                    key={conn.id}
+                                    className={styles.recentItem}
+                                    onClick={() => connectToDatabase(conn.path)}
+                                >
                                     <HardDrive size={16} />
                                     <div className={styles.recentInfo}>
                                         <span className={styles.recentName}>{conn.name}</span>

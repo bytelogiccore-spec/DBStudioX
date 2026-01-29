@@ -277,6 +277,22 @@ impl Database {
         log::info!("Restore completed successfully from: {}", src_path);
         Ok(())
     }
+
+    /// Enable or disable statement caching via sqlite3x
+    pub fn set_cache_enabled(&self, enabled: bool) -> Sqlite3xResult<()> {
+        log::debug!("Setting cache enabled: {}", enabled);
+
+        let conn = self.connection.lock()
+            .map_err(|e| Sqlite3xError::Connection(format!("Lock error: {}", e)))?;
+
+        // Get raw handle and call FFI
+        unsafe {
+            let handle = conn.handle();
+            super::ffi::set_cache_enabled(handle as *mut std::ffi::c_void, enabled)?;
+        }
+
+        Ok(())
+    }
 }
 
 /// Helper to convert JSON params to Rusqlite values
@@ -478,6 +494,29 @@ impl Database {
         &self.path
     }
 
+    /// Get current memory usage (page cache) in bytes
+    pub fn get_memory_usage(&self) -> Sqlite3xResult<i64> {
+        let conn = self.connection.lock()
+            .map_err(|e| Sqlite3xError::Connection(format!("Lock error: {}", e)))?;
+
+        // Get current cache usage (SQLITE_DBSTATUS_CACHE_USED)
+        // db_status returns (current, highwater)
+        let (current, _) = conn.db_status(DatabaseStatus::CacheUsed)
+            .map_err(|e| Sqlite3xError::Query(format!("Failed to get memory usage: {}", e)))?;
+
+        Ok(current as i64)
+    }
+
+    /// Get WAL file size in bytes
+    pub fn get_wal_size(&self) -> Sqlite3xResult<i64> {
+        let wal_path = format!("{}-wal", self.path);
+        match std::fs::metadata(&wal_path) {
+            Ok(metadata) => Ok(metadata.len() as i64),
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(0),
+            Err(e) => Err(Sqlite3xError::Connection(format!("Failed to get WAL size: {}", e))),
+        }
+    }
+
     pub fn set_partition_manager(&self, manager: Arc<super::partition::PartitionManager>) {
         let mut field = self.partition_manager.write();
         *field = Some(manager);
@@ -553,6 +592,18 @@ impl Database {
         // Track the function name
         let mut udfs = self.registered_udfs.lock().unwrap();
         udfs.insert(function_name.to_string());
+
+        Ok(())
+    }
+
+    /// Clear the prepared statement cache
+    pub fn clear_cache(&self) -> Sqlite3xResult<()> {
+        log::info!("Clearing prepared statement cache");
+
+        let conn = self.connection.lock()
+            .map_err(|e| Sqlite3xError::Connection(format!("Lock error: {}", e)))?;
+
+        conn.flush_prepared_statement_cache();
 
         Ok(())
     }
@@ -663,4 +714,21 @@ pub struct TriggerInfo {
     pub name: String,
     pub table_name: String,
     pub sql: Option<String>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_clear_cache() {
+        let db = Database::open(":memory:").expect("Failed to open in-memory db");
+
+        // Execute some queries to populate cache
+        db.execute("CREATE TABLE test (id INTEGER PRIMARY KEY)").expect("Failed to create table");
+        db.execute("INSERT INTO test VALUES (1)").expect("Failed to insert");
+
+        // Clear cache
+        db.clear_cache().expect("Failed to clear cache");
+    }
 }

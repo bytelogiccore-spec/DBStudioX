@@ -57,6 +57,7 @@ impl PartitionConfig {
 pub struct PartitionManager {
     main_db: Arc<parking_lot::Mutex<Database>>,
     attached_dbs: Arc<Mutex<HashMap<String, Arc<parking_lot::Mutex<Database>>>>>,
+    shard_connections: Arc<Mutex<HashMap<String, Arc<parking_lot::Mutex<Database>>>>>,
     config: Arc<RwLock<PartitionConfig>>,
     round_robin_index: Arc<Mutex<usize>>,
     parse_cache: Arc<Mutex<LruCache<String, ParsedStatement>>>,
@@ -71,6 +72,7 @@ impl PartitionManager {
         Ok(Self {
             main_db,
             attached_dbs: Arc::new(Mutex::new(HashMap::new())),
+            shard_connections: Arc::new(Mutex::new(HashMap::new())),
             config: Arc::new(RwLock::new(config)),
             round_robin_index: Arc::new(Mutex::new(0)),
             parse_cache,
@@ -84,11 +86,15 @@ impl PartitionManager {
     pub fn initialize_shards(&self) -> Sqlite3Result<()> {
         let config = self.config.read();
         let mut attached = self.attached_dbs.lock();
+        let mut connections = self.shard_connections.lock();
 
         for (i, shard_path) in config.shards.iter().enumerate() {
             let alias = format!("shard_{}", i);
             self.main_db.lock().attach_database_for_partition(&alias, shard_path)?;
-            attached.insert(alias, Arc::clone(&self.main_db));
+            attached.insert(alias.clone(), Arc::clone(&self.main_db));
+
+            let db = Database::open(shard_path)?;
+            connections.insert(alias, Arc::new(parking_lot::Mutex::new(db)));
         }
         Ok(())
     }
@@ -136,7 +142,7 @@ impl PartitionManager {
             let end = rest.find([' ', ',', ';', '\n', '\r']).unwrap_or(rest.len());
             let table = &rest[..end].trim();
             if !table.is_empty() && !table.contains('.') {
-                result = format!("{} FROM {}.{}", &sql[..pos+6], alias, &rest[end..]);
+                result = format!("{}{}.{}{}", &sql[..pos+6], alias, table, &rest[end..]);
             }
         }
         // ... (Simpler version for insert/update can be added if needed)
@@ -179,17 +185,35 @@ impl PartitionManager {
         let mut columns = Vec::new();
         let mut column_types = Vec::new();
 
-        let attached_dbs = self.attached_dbs.lock();
-        for alias in target_shards {
-            if let Some(db) = attached_dbs.get(&alias) {
-                let modified = self.modify_sql_for_shard(sql, &alias);
-                let res = db.lock().query(&modified)?;
-                if columns.is_empty() {
-                    columns = res.columns;
-                    column_types = res.column_types;
+        let mut dbs_to_query = Vec::new();
+        {
+            let connections = self.shard_connections.lock();
+            for alias in &target_shards {
+                if let Some(db) = connections.get(alias) {
+                    dbs_to_query.push((alias.clone(), Arc::clone(db)));
                 }
-                all_rows.extend(res.rows);
             }
+        }
+
+        let results: Vec<Sqlite3Result<QueryResult>> = std::thread::scope(|s| {
+            let mut handles = Vec::new();
+            for (_alias, db) in dbs_to_query {
+                handles.push(s.spawn(move || {
+                    let db_guard = db.lock();
+                    db_guard.query(sql)
+                }));
+            }
+
+            handles.into_iter().map(|h| h.join().unwrap()).collect()
+        });
+
+        for res in results {
+            let res = res?;
+            if columns.is_empty() {
+                columns = res.columns;
+                column_types = res.column_types;
+            }
+            all_rows.extend(res.rows);
         }
 
         Ok(QueryResult { columns, column_types, rows: all_rows })

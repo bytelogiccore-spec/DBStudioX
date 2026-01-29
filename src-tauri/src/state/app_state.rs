@@ -129,6 +129,11 @@ impl AppState {
         Ok(())
     }
 
+    /// Get transaction info by transaction ID
+    pub fn get_transaction(&self, transaction_id: &str) -> Option<TransactionInfo> {
+        self.transactions.read().get(transaction_id).cloned()
+    }
+
     /// Remove a transaction
     pub fn remove_transaction(&self, transaction_id: &str) -> Result<(), String> {
         let mut transactions = self.transactions.write();
@@ -138,6 +143,11 @@ impl AppState {
         }
 
         Ok(())
+    }
+
+    /// Get a specific transaction
+    pub fn get_transaction(&self, transaction_id: &str) -> Option<TransactionInfo> {
+        self.transactions.read().get(transaction_id).cloned()
     }
 
     /// Get active transactions for a connection
