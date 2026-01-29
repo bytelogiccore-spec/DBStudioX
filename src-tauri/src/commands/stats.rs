@@ -38,8 +38,26 @@ pub async fn get_stats(
         return Err(AppError::NotFound(format!("Connection not found: {}", connection_id)));
     }
 
-    // TODO: Implement actual stats retrieval using sqlite3x
-    // Use sqlite3x_database_get_stats()
+    // Get actual stats from database handle
+    let mut memory_usage_bytes = 0;
+    let mut wal_size = 0;
+
+    if let Some(db_handle) = state.get_db_handle(&connection_id) {
+        let db = db_handle.lock();
+
+        match db.get_memory_usage() {
+            Ok(mem) => memory_usage_bytes = mem,
+            Err(e) => log::warn!("Failed to get memory usage for connection {}: {}", connection_id, e),
+        }
+
+        match db.get_wal_size() {
+            Ok(size) => wal_size = size,
+            Err(e) => log::warn!("Failed to get WAL size for connection {}: {}", connection_id, e),
+        }
+    } else {
+        // Should be covered by has_connection check above, but for safety
+        return Err(AppError::NotFound(format!("Connection handle not found: {}", connection_id)));
+    }
 
     // Get stats from app state
     let query_stats = state.get_query_stats(&connection_id);
@@ -54,8 +72,8 @@ pub async fn get_stats(
         min_query_time_ms: query_stats.min_query_time_ms,
         connection_pool_size: 1,
         active_connections: 1,
-        memory_usage_bytes: 0,
-        wal_size: 0,
+        memory_usage_bytes,
+        wal_size,
         last_checkpoint: chrono::Utc::now().to_rfc3339(),
     };
 
