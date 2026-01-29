@@ -253,35 +253,31 @@ async fn import_json(
     db.execute("BEGIN TRANSACTION")
         .map_err(|e| AppError::QueryError(format!("Failed to begin transaction: {:?}", e)))?;
         
-    let mut count = 0;
-    
     let first_obj = array[0].as_object()
         .ok_or_else(|| AppError::BadRequest("JSON array members must be objects".to_string()))?;
         
     let columns: Vec<String> = first_obj.keys().cloned().collect();
-    
-    for item in array {
+    let placeholders: Vec<String> = (0..columns.len()).map(|_| "?".to_string()).collect();
+    let row_sql = format!(
+        "INSERT INTO \"{}\" ({}) VALUES ({})",
+        table_name,
+        columns.join(", "),
+        placeholders.join(", ")
+    );
+
+    let params_iter = array.iter().map(|item| -> Result<Vec<serde_json::Value>, String> {
         let obj = item.as_object()
-            .ok_or_else(|| AppError::BadRequest("JSON array members must be objects".to_string()))?;
+            .ok_or_else(|| "JSON array members must be objects".to_string())?;
             
-        let mut params = Vec::new();
+        let mut params = Vec::with_capacity(columns.len());
         for col in &columns {
             params.push(obj.get(col).cloned().unwrap_or(serde_json::Value::Null));
         }
+        Ok(params)
+    });
 
-        let placeholders: Vec<String> = (0..columns.len()).map(|_| "?".to_string()).collect();
-        let row_sql = format!(
-            "INSERT INTO \"{}\" ({}) VALUES ({})",
-            table_name,
-            columns.join(", "),
-            placeholders.join(", ")
-        );
-        
-        db.execute_with_params(&row_sql, params)
-            .map_err(|e| AppError::QueryError(format!("Insert failed at row {}: {:?}", count + 1, e)))?;
-            
-        count += 1;
-    }
+    let count = db.execute_batch_params(&row_sql, params_iter)
+        .map_err(|e| AppError::QueryError(format!("Batch insert failed: {:?}", e)))?;
     
     db.execute("COMMIT")
         .map_err(|e| AppError::QueryError(format!("Failed to commit transaction: {:?}", e)))?;

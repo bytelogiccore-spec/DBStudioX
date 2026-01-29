@@ -72,6 +72,37 @@ impl Database {
         Ok(())
     }
 
+    /// Execute a prepared SQL statement repeatedly with different sets of parameters from an iterator
+    pub fn execute_batch_params<I, E>(&self, sql: &str, params_iter: I) -> Sqlite3xResult<usize>
+    where
+        I: Iterator<Item = Result<Vec<serde_json::Value>, E>>,
+        E: ToString,
+    {
+        log::debug!("Executing Batch SQL via iterator");
+
+        let conn = self.connection.lock()
+            .map_err(|e| Sqlite3xError::Connection(format!("Lock error: {}", e)))?;
+
+        let mut stmt = conn.prepare(sql)
+             .map_err(|e| Sqlite3xError::Query(format!("Prepare error: {}", e)))?;
+
+        let mut count = 0;
+
+        for (index, params_res) in params_iter.enumerate() {
+            let params = params_res.map_err(|e| Sqlite3xError::Query(format!("Batch param error: {}", e.to_string())))?;
+
+            let sqlite_params = json_params_to_sqlite(params);
+            let params_refs: Vec<&dyn rusqlite::ToSql> = sqlite_params.iter().map(|p| p as &dyn rusqlite::ToSql).collect();
+
+            stmt.execute(&params_refs[..])
+                .map_err(|e| Sqlite3xError::Query(format!("Execute batch error at index {}: {}", index, e)))?;
+
+            count += 1;
+        }
+
+        Ok(count)
+    }
+
     /// Execute a SQL statement with parameters
     pub fn execute_with_params(&self, sql: &str, params: Vec<serde_json::Value>) -> Sqlite3xResult<usize> {
         log::debug!("Executing SQL with params: {}", sql);
