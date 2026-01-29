@@ -22,10 +22,24 @@ pub async fn begin_transaction(
     // Generate transaction ID
     let transaction_id = Uuid::new_v4().to_string();
 
-    // TODO: Actually begin transaction using sqlite3x
+    // Get DB handle
+    let db_handle = state.get_db_handle(&connection_id)
+        .ok_or_else(|| AppError::NotFound(format!("Connection not found: {}", connection_id)))?;
 
-    state.add_transaction(&connection_id, &transaction_id)
-        .map_err(|e| AppError::InternalError(e))?;
+    // Actually begin transaction using sqlite3x
+    {
+        let db = db_handle.lock();
+        db.execute("BEGIN TRANSACTION")
+            .map_err(|e| AppError::QueryError(format!("Failed to begin transaction: {:?}", e)))?;
+    }
+
+    // Add to state
+    if let Err(e) = state.add_transaction(&connection_id, &transaction_id) {
+        // Attempt to rollback if adding to state fails
+        let db = db_handle.lock();
+        let _ = db.execute("ROLLBACK");
+        return Err(AppError::InternalError(e));
+    }
 
     log::info!("Transaction started: {}", transaction_id);
 
@@ -40,7 +54,22 @@ pub async fn commit_transaction(
 ) -> AppResult<()> {
     log::info!("Committing transaction: {}", transaction_id);
 
-    // TODO: Actually commit transaction using sqlite3x
+    // Get transaction info to find connection
+    let transaction = state.get_transaction(&transaction_id)
+        .ok_or_else(|| AppError::NotFound(format!("Transaction not found: {}", transaction_id)))?;
+
+    let connection_id = transaction.connection_id;
+
+    // Get DB handle
+    let db_handle = state.get_db_handle(&connection_id)
+        .ok_or_else(|| AppError::NotFound(format!("Connection not found: {}", connection_id)))?;
+
+    // Actually commit transaction using sqlite3x
+    {
+        let db = db_handle.lock();
+        db.execute("COMMIT")
+            .map_err(|e| AppError::QueryError(format!("Failed to commit transaction: {:?}", e)))?;
+    }
 
     state.remove_transaction(&transaction_id)
         .map_err(|e| AppError::InternalError(e))?;
@@ -123,7 +152,7 @@ pub async fn rollback_transaction_impl(
 ) -> AppResult<()> {
     log::info!("Rolling back transaction: {}", transaction_id);
 
-    // Get connection ID associated with the transaction
+    // Get transaction info to find connection
     let transaction = state.get_transaction(&transaction_id)
         .ok_or_else(|| AppError::NotFound(format!("Transaction not found: {}", transaction_id)))?;
 
@@ -137,7 +166,7 @@ pub async fn rollback_transaction_impl(
     {
         let db = db_handle.lock();
         db.execute("ROLLBACK")
-            .map_err(|e| AppError::QueryError(format!("Failed to rollback transaction: {}", e)))?;
+            .map_err(|e| AppError::QueryError(format!("Failed to rollback transaction: {:?}", e)))?;
     }
 
     state.remove_transaction(&transaction_id)
