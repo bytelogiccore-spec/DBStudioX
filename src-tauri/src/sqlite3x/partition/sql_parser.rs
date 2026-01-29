@@ -41,17 +41,17 @@ impl SqlParser {
     /// SQL 인젝션 패턴 감지
     fn detect_sql_injection_patterns(&self, sql: &str) -> Sqlite3Result<()> {
         let sql_upper = sql.trim().to_uppercase();
-        
+
         let allowed_prefixes = ["INSERT", "UPDATE", "DELETE", "SELECT"];
         let starts_with_allowed = allowed_prefixes.iter()
             .any(|prefix| sql_upper.starts_with(prefix));
-        
+
         if !starts_with_allowed {
             return Err(Sqlite3Error::InvalidSql(
                 "Only INSERT, UPDATE, DELETE, SELECT statements are supported for partitioning".to_string()
             ));
         }
-        
+
         let ddl_keywords = [" DROP ", " ALTER ", " CREATE ", " TRUNCATE "];
         for keyword in &ddl_keywords {
             if sql_upper.contains(keyword) {
@@ -60,19 +60,19 @@ impl SqlParser {
                 ));
             }
         }
-        
+
         if sql.contains("--") || sql.contains("/*") || sql.contains("*/") {
             return Err(Sqlite3Error::InvalidSql(
                 "SQL comments are not allowed for security reasons".to_string()
             ));
         }
-        
+
         if sql_upper.matches("SELECT").count() > 1 {
             return Err(Sqlite3Error::InvalidSql(
                 "Nested SELECT statements (subqueries) are not supported for partitioning".to_string()
             ));
         }
-        
+
         Ok(())
     }
 
@@ -82,18 +82,18 @@ impl SqlParser {
                 "Empty identifier not allowed".to_string()
             ));
         }
-        
+
         let first_char = identifier.chars().next()
             .ok_or_else(|| Sqlite3Error::InvalidSql(
                 "Invalid identifier: empty".to_string()
             ))?;
-        
+
         if !first_char.is_alphabetic() && first_char != '_' {
             return Err(Sqlite3Error::InvalidSql(
                 format!("Invalid identifier '{}': must start with letter or underscore", identifier)
             ));
         }
-        
+
         for ch in identifier.chars().skip(1) {
             if !ch.is_alphanumeric() && ch != '_' {
                 return Err(Sqlite3Error::InvalidSql(
@@ -101,7 +101,7 @@ impl SqlParser {
                 ));
             }
         }
-        
+
         Ok(())
     }
 

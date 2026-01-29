@@ -268,9 +268,9 @@ pub async fn list_directory(path: String) -> AppResult<Vec<FileEntry>> {
 #[tauri::command]
 pub async fn get_drives() -> AppResult<Vec<DriveInfo>> {
     log::info!("Getting available drives");
-    
+
     let mut drives = Vec::new();
-    
+
     #[cfg(target_os = "windows")]
     {
         // On Windows, check common drive letters
@@ -286,7 +286,7 @@ pub async fn get_drives() -> AppResult<Vec<DriveInfo>> {
             }
         }
     }
-    
+
     #[cfg(not(target_os = "windows"))]
     {
         // On Unix-like systems, common mount points
@@ -296,7 +296,7 @@ pub async fn get_drives() -> AppResult<Vec<DriveInfo>> {
             ("/mnt", "Mounts"),
             ("/media", "Media"),
         ];
-        
+
         for (path, name) in common_paths {
             let p = PathBuf::from(path);
             if p.exists() {
@@ -308,7 +308,7 @@ pub async fn get_drives() -> AppResult<Vec<DriveInfo>> {
             }
         }
     }
-    
+
     Ok(drives)
 }
 
@@ -316,7 +316,7 @@ pub async fn get_drives() -> AppResult<Vec<DriveInfo>> {
 #[tauri::command]
 pub async fn get_home_directory() -> AppResult<String> {
     log::info!("Getting home directory");
-    
+
     dirs::home_dir()
         .map(|p| p.to_string_lossy().to_string())
         .ok_or_else(|| AppError::NotFound("Could not determine home directory".to_string()))
@@ -326,9 +326,9 @@ pub async fn get_home_directory() -> AppResult<String> {
 #[tauri::command]
 pub async fn get_special_directories() -> AppResult<Vec<DriveInfo>> {
     log::info!("Getting special directories");
-    
+
     let mut dirs_list = Vec::new();
-    
+
     if let Some(home) = dirs::home_dir() {
         dirs_list.push(DriveInfo {
             name: "Home".to_string(),
@@ -336,7 +336,7 @@ pub async fn get_special_directories() -> AppResult<Vec<DriveInfo>> {
             is_removable: false,
         });
     }
-    
+
     if let Some(desktop) = dirs::desktop_dir() {
         dirs_list.push(DriveInfo {
             name: "Desktop".to_string(),
@@ -344,7 +344,7 @@ pub async fn get_special_directories() -> AppResult<Vec<DriveInfo>> {
             is_removable: false,
         });
     }
-    
+
     if let Some(documents) = dirs::document_dir() {
         dirs_list.push(DriveInfo {
             name: "Documents".to_string(),
@@ -352,7 +352,7 @@ pub async fn get_special_directories() -> AppResult<Vec<DriveInfo>> {
             is_removable: false,
         });
     }
-    
+
     if let Some(downloads) = dirs::download_dir() {
         dirs_list.push(DriveInfo {
             name: "Downloads".to_string(),
@@ -360,7 +360,7 @@ pub async fn get_special_directories() -> AppResult<Vec<DriveInfo>> {
             is_removable: false,
         });
     }
-    
+
     Ok(dirs_list)
 }
 

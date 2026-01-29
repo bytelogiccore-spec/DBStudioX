@@ -35,7 +35,7 @@ pub fn setup_hooks(app: &AppHandle, state: &crate::state::AppState, connection_i
 
     let app_clone = std::panic::AssertUnwindSafe(app.clone());
     let db = db_handle.lock();
-    
+
     if let Err(e) = db.on_update(move |action: Action, _db_name: &str, table: &str, rowid: i64| {
         let action_str = format!("{:?}", action);
         let operation = match action_str.as_str() {

@@ -36,24 +36,24 @@ impl AppState {
 
     /// Add a new database connection
     pub fn add_connection(
-        &self, 
-        connection: DatabaseConnection, 
+        &self,
+        connection: DatabaseConnection,
         db_handle: Database
     ) -> Result<(), String> {
         let mut connections = self.connections.write();
         let mut handles = self.db_handles.write();
-        
+
         if connections.contains_key(&connection.id) {
             return Err(format!("Connection already exists: {}", connection.id));
         }
-        
+
         let id = connection.id.clone();
         connections.insert(id.clone(), connection);
         handles.insert(id.clone(), Arc::new(Mutex::new(db_handle)));
-        
+
         // Initialize query stats for this connection
         self.query_stats.write().insert(id, QueryStats::default());
-        
+
         Ok(())
     }
 
@@ -61,21 +61,21 @@ impl AppState {
     pub fn remove_connection(&self, connection_id: &str) -> Result<(), String> {
         let mut connections = self.connections.write();
         let mut handles = self.db_handles.write();
-        
+
         if connections.remove(connection_id).is_none() {
             return Err(format!("Connection not found: {}", connection_id));
         }
-        
+
         // Explicitly remove and drop the handle to close the DB
         handles.remove(connection_id);
-        
+
         // Clean up related data
         self.query_stats.write().remove(connection_id);
-        
+
         // Remove any transactions for this connection
         let mut transactions = self.transactions.write();
         transactions.retain(|_, t| t.connection_id != connection_id);
-        
+
         Ok(())
     }
 
@@ -112,11 +112,11 @@ impl AppState {
         }
 
         let mut transactions = self.transactions.write();
-        
+
         if transactions.contains_key(transaction_id) {
             return Err(format!("Transaction already exists: {}", transaction_id));
         }
-        
+
         transactions.insert(
             transaction_id.to_string(),
             TransactionInfo {
@@ -125,7 +125,7 @@ impl AppState {
                 started_at: chrono::Utc::now(),
             },
         );
-        
+
         Ok(())
     }
 
@@ -137,11 +137,11 @@ impl AppState {
     /// Remove a transaction
     pub fn remove_transaction(&self, transaction_id: &str) -> Result<(), String> {
         let mut transactions = self.transactions.write();
-        
+
         if transactions.remove(transaction_id).is_none() {
             return Err(format!("Transaction not found: {}", transaction_id));
         }
-        
+
         Ok(())
     }
 
@@ -179,25 +179,25 @@ impl AppState {
         cache_hit: bool,
     ) {
         let mut stats = self.query_stats.write();
-        
+
         if let Some(s) = stats.get_mut(connection_id) {
             s.total_queries += 1;
             s.total_time_ms += execution_time_ms;
-            
+
             if cache_hit {
                 s.cache_hits += 1;
             } else {
                 s.cache_misses += 1;
             }
-            
+
             if execution_time_ms > s.max_query_time_ms {
                 s.max_query_time_ms = execution_time_ms;
             }
-            
+
             if s.min_query_time_ms == 0.0 || execution_time_ms < s.min_query_time_ms {
                 s.min_query_time_ms = execution_time_ms;
             }
-            
+
             s.avg_query_time_ms = s.total_time_ms / s.total_queries as f64;
             s.cache_hit_rate = if s.cache_hits + s.cache_misses > 0 {
                 s.cache_hits as f64 / (s.cache_hits + s.cache_misses) as f64 * 100.0
@@ -210,7 +210,7 @@ impl AppState {
     /// Reset query statistics for a connection
     pub fn reset_query_stats(&self, connection_id: &str) {
         let mut stats = self.query_stats.write();
-        
+
         if let Some(s) = stats.get_mut(connection_id) {
             *s = QueryStats::default();
         }

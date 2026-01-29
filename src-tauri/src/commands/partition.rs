@@ -25,11 +25,11 @@ pub async fn get_partition_info(
         .ok_or_else(|| AppError::NotFound(format!("Connection not found: {}", connection_id)))?;
 
     let db = db_handle.lock();
-    
+
     // Query all tables
     let result = db.query("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name")
         .map_err(|e| AppError::QueryError(format!("{:?}", e)))?;
-    
+
     let table_names: Vec<String> = result.rows.iter()
         .filter_map(|row| row.get(0).and_then(|v| v.as_str()).map(|s| s.to_string()))
         .collect();
@@ -87,7 +87,7 @@ pub async fn get_attached_shards(
 
     let db = db_handle.lock();
     let dbs = db.get_attached_databases().map_err(|e| AppError::QueryError(e.to_string()))?;
-    
+
     Ok(dbs.into_iter().map(|d| ShardInfo {
         name: d.name,
         file: d.file,
@@ -179,12 +179,12 @@ pub async fn create_partition_policy(
         if db.get_partition_manager().is_none() {
             drop(db); // Release lock before initializing
             log::info!("Auto-initializing PartitionManager with default settings for connection: {}", connection_id);
-            
+
             // Use RoundRobin strategy with main database only (no external shards)
             let config = PartitionConfig::new(PartitionStrategy::RoundRobin, vec!["main".to_string()]);
             let manager = PartitionManager::new(Arc::clone(&db_handle), config)
                 .map_err(|e| AppError::CommandError(format!("Failed to create PartitionManager: {:?}", e)))?;
-            
+
             let db = db_handle.lock();
             db.set_partition_manager(Arc::new(manager));
         }
@@ -225,7 +225,7 @@ pub async fn get_partition_policies(
         .ok_or_else(|| AppError::NotFound(format!("Connection not found: {}", connection_id)))?;
 
     let db = db_handle.lock();
-    
+
     // Return empty list if partitioning is not initialized
     let manager = match db.get_partition_manager() {
         Some(m) => m,
@@ -233,7 +233,7 @@ pub async fn get_partition_policies(
     };
 
     let config = manager.get_config().read().clone();
-    
+
     Ok(config.policies.into_iter().map(|p| PartitionPolicy {
         id: p.table_name.clone(),
         table_name: p.table_name,
@@ -257,7 +257,7 @@ pub async fn delete_partition_policy(
         .ok_or_else(|| AppError::NotFound(format!("Connection not found: {}", connection_id)))?;
 
     let db = db_handle.lock();
-    
+
     // If partitioning is not initialized, there are no policies to delete
     let manager = match db.get_partition_manager() {
         Some(m) => m,
@@ -292,7 +292,7 @@ pub async fn run_partition_maintenance(
         .ok_or_else(|| AppError::NotFound(format!("Connection not found: {}", connection_id)))?;
 
     let db = db_handle.lock();
-    
+
     // If partitioning is not initialized, there's nothing to maintain
     let manager = match db.get_partition_manager() {
         Some(m) => m,
@@ -307,11 +307,11 @@ pub async fn run_partition_maintenance(
     };
 
     let policies_processed = manager.get_config().read().policies.len() as i32;
-    
+
     let rows_deleted = manager.run_partition_maintenance()
         .map_err(|e| AppError::CommandError(format!("Maintenance failed: {:?}", e)))? as i64;
 
-    log::info!("Maintenance complete: {} policies processed, {} rows deleted", 
+    log::info!("Maintenance complete: {} policies processed, {} rows deleted",
                policies_processed, rows_deleted);
 
     Ok(MaintenanceResult {

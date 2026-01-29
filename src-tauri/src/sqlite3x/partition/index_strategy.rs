@@ -30,7 +30,7 @@ impl GlobalIndexManager {
 
         // Query all shards
         let results = self.partition_manager.query_partitioned(&sql)?;
-        
+
         // Aggregate results
         let mut total_count: u64 = 0;
         for row in results.rows {

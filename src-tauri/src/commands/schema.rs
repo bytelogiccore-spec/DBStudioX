@@ -86,13 +86,13 @@ pub async fn get_schema(
 
     // Convert wrapper types to frontend types with column information
     let mut tables: Vec<TableInfo> = Vec::new();
-    
+
     for table in schema.tables.iter() {
         // Get column information for each table
         let pragma_sql = format!("PRAGMA table_info({})", table.name);
         let result = db.query(&pragma_sql)
             .map_err(|e| AppError::QueryError(format!("{:?}", e)))?;
-        
+
         let mut columns = Vec::new();
         for row in result.rows {
             // PRAGMA table_info returns: cid, name, type, notnull, dflt_value, pk
@@ -207,12 +207,12 @@ pub async fn get_table_info(
         .ok_or_else(|| AppError::NotFound(format!("Connection not found: {}", connection_id)))?;
 
     let db = db_handle.lock();
-    
+
     // Query table columns using PRAGMA
     let pragma_sql = format!("PRAGMA table_info({})", table_name);
     let result = db.query(&pragma_sql)
         .map_err(|e| AppError::QueryError(format!("{:?}", e)))?;
-    
+
     let mut columns = Vec::new();
     for row in result.rows {
         // PRAGMA table_info returns: cid, name, type, notnull, dflt_value, pk

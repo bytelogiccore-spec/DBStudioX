@@ -22,7 +22,7 @@ pub async fn diff_schemas(
     // 2. Get target schema (Directly open and read)
     let target_db = crate::sqlite3x::wrapper::Database::open(&target_path)
         .map_err(|e| AppError::ConnectionError(format!("Failed to open target DB: {:?}", e)))?;
-    
+
     let target_schema = target_db.get_schema()
         .map_err(|e| AppError::InternalError(format!("{:?}", e)))?;
 

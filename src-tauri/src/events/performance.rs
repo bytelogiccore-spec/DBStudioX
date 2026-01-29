@@ -31,7 +31,7 @@ pub fn emit_performance_update(app: &AppHandle, metrics: PerformanceMetrics) {
         timestamp: chrono::Utc::now().to_rfc3339(),
         metrics,
     };
-    
+
     if let Err(e) = app.emit("db:perf_update", &event) {
         log::error!("Failed to emit performance event: {}", e);
     }
@@ -40,12 +40,12 @@ pub fn emit_performance_update(app: &AppHandle, metrics: PerformanceMetrics) {
 /// Start background performance monitoring
 pub async fn start_monitoring(app: tauri::AppHandle, state: std::sync::Arc<crate::state::AppState>, interval_ms: u64) {
     log::info!("Performance monitoring started");
-    
+
     let mut interval = tokio::time::interval(std::time::Duration::from_millis(interval_ms));
-    
+
     loop {
         interval.tick().await;
-        
+
         let connections = state.get_connections();
         for conn in connections {
             let stats = state.get_query_stats(&conn.id);
@@ -54,7 +54,7 @@ pub async fn start_monitoring(app: tauri::AppHandle, state: std::sync::Arc<crate
                 query_count: stats.total_queries,
                 avg_query_time_ms: stats.avg_query_time_ms,
                 connection_count: 1,
-                memory_usage_bytes: 0, 
+                memory_usage_bytes: 0,
                 wal_checkpoint_count: 0,
             };
             emit_performance_update(&app, metrics);

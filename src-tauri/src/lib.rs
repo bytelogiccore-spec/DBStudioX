@@ -24,9 +24,9 @@ pub fn run() {
         .setup(|app| {
             // Initialize application state as a shared Arc
             let app_state = std::sync::Arc::new(AppState::new());
-            
+
             // Manage the state for Tauri commands
-            // Tauri will automatically handle the Arc if we specify the type correctly, 
+            // Tauri will automatically handle the Arc if we specify the type correctly,
             // but for simplicity and clarity with the background tasks, we manage the Arc itself.
             app.manage(app_state.clone());
 

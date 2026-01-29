@@ -35,7 +35,7 @@ pub async fn register_built_in_udfs(
     db.create_scalar_function("studio_version", 0, true, |_ctx: &rusqlite::functions::Context| {
         Ok("0.0.1-alpha".to_string())
     }).map_err(|e| AppError::CommandError(format!("Failed to register studio_version: {:?}", e)))?;
-    
+
     registered.push(UdfInfo {
         name: "studio_version".to_string(),
         arg_count: 0,
@@ -72,7 +72,7 @@ pub async fn get_udf_list(
 
     let db = db_handle.lock();
     let functions = db.get_registered_functions();
-    
+
     Ok(functions.into_iter().map(|name| UdfInfo {
         name,
         arg_count: -1, // -1 means variadic or unknown if not tracked
@@ -105,7 +105,7 @@ pub async fn create_user_function(
         .ok_or_else(|| AppError::NotFound(format!("Connection not found: {}", connection_id)))?;
 
     let db = db_handle.lock();
-    
+
     // Validate the expression by trying to compile it
     let test_sql = format!("SELECT {}", request.expression);
     db.query(&test_sql).map_err(|e| AppError::QueryError(format!("Invalid expression: {:?}", e)))?;
@@ -113,7 +113,7 @@ pub async fn create_user_function(
     // For simple expressions, we create a scalar function that evaluates the SQL
     let expr = request.expression.clone();
     let arg_count = request.arg_count;
-    
+
     // Create a function that evaluates the expression
     // Note: For complex expressions, we'd need a more sophisticated approach
     db.create_scalar_function(&request.name, arg_count, request.deterministic, move |ctx: &rusqlite::functions::Context| {
@@ -153,7 +153,7 @@ pub async fn delete_user_function(
     function_name: String,
 ) -> AppResult<()> {
     log::info!("Marking UDF '{}' for deletion in connection: {}", function_name, connection_id);
-    
+
     // SQLite doesn't support removing functions at runtime.
     // The function will be gone on next connection.
     // We could maintain a blacklist or registry if needed.

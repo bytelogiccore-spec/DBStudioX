@@ -25,7 +25,7 @@ impl PartitionMetadata {
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap_or(std::time::Duration::from_secs(0))
             .as_secs();
-        
+
         Self {
             version: 1,
             config,
@@ -40,10 +40,10 @@ impl PartitionMetadata {
             .map_err(|e| Sqlite3Error::Query(
                 format!("Failed to serialize metadata: {}", e)
             ))?;
-        
+
         std::fs::write(path, json)
             .map_err(|e| Sqlite3Error::Io(e))?;
-        
+
         Ok(())
     }
 
@@ -51,18 +51,18 @@ impl PartitionMetadata {
     pub fn load(path: &str) -> Sqlite3Result<Self> {
         let content = std::fs::read_to_string(path)
             .map_err(|e| Sqlite3Error::Io(e))?;
-        
+
         let metadata: Self = serde_json::from_str(&content)
             .map_err(|e| Sqlite3Error::Query(
                 format!("Failed to parse metadata: {}", e)
             ))?;
-        
+
         if metadata.version > 1 {
             return Err(Sqlite3Error::Query(
                 format!("Unsupported metadata version: {}", metadata.version)
             ));
         }
-        
+
         Ok(metadata)
     }
 
