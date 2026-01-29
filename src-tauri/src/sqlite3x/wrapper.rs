@@ -467,6 +467,18 @@ impl Database {
         Ok(())
     }
 
+    /// Clear the prepared statement cache
+    pub fn clear_cache(&self) -> Sqlite3xResult<()> {
+        log::info!("Clearing prepared statement cache");
+
+        let conn = self.connection.lock()
+            .map_err(|e| Sqlite3xError::Connection(format!("Lock error: {}", e)))?;
+
+        conn.flush_prepared_statement_cache();
+
+        Ok(())
+    }
+
     /// Get list of registered UDF names
     pub fn get_registered_functions(&self) -> Vec<String> {
         let udfs = self.registered_udfs.lock().unwrap();
@@ -566,4 +578,21 @@ pub struct TriggerInfo {
     pub name: String,
     pub table_name: String,
     pub sql: Option<String>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_clear_cache() {
+        let db = Database::open(":memory:").expect("Failed to open in-memory db");
+
+        // Execute some queries to populate cache
+        db.execute("CREATE TABLE test (id INTEGER PRIMARY KEY)").expect("Failed to create table");
+        db.execute("INSERT INTO test VALUES (1)").expect("Failed to insert");
+
+        // Clear cache
+        db.clear_cache().expect("Failed to clear cache");
+    }
 }

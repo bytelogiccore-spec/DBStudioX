@@ -93,8 +93,14 @@ pub async fn clear_cache(
         return Err(AppError::NotFound(format!("Connection not found: {}", connection_id)));
     }
 
-    // TODO: Implement using sqlite3x
-    // sqlite3x_database_clear_cache(handle)
+    // Get the database handle and clear cache
+    if let Some(db_handle) = state.get_db_handle(&connection_id) {
+        let db = db_handle.lock();
+        db.clear_cache()
+            .map_err(|e| AppError::Database(format!("Failed to clear cache: {}", e)))?;
+    } else {
+        return Err(AppError::NotFound(format!("Database handle not found for connection: {}", connection_id)));
+    }
 
     state.reset_query_stats(&connection_id);
 
