@@ -3,7 +3,7 @@
 //! High-level Rust wrapper using rusqlite for SQLite operations.
 
 use super::errors::{Sqlite3xError, Sqlite3xResult};
-use rusqlite::Connection;
+use rusqlite::{Connection, DatabaseStatus};
 use rusqlite::hooks::Action;
 use std::sync::{Mutex, Arc};
 use parking_lot::RwLock;
@@ -365,6 +365,29 @@ impl Database {
     /// Get database path
     pub fn get_path(&self) -> &str {
         &self.path
+    }
+
+    /// Get current memory usage (page cache) in bytes
+    pub fn get_memory_usage(&self) -> Sqlite3xResult<i64> {
+        let conn = self.connection.lock()
+            .map_err(|e| Sqlite3xError::Connection(format!("Lock error: {}", e)))?;
+
+        // Get current cache usage (SQLITE_DBSTATUS_CACHE_USED)
+        // db_status returns (current, highwater)
+        let (current, _) = conn.db_status(DatabaseStatus::CacheUsed)
+            .map_err(|e| Sqlite3xError::Query(format!("Failed to get memory usage: {}", e)))?;
+
+        Ok(current as i64)
+    }
+
+    /// Get WAL file size in bytes
+    pub fn get_wal_size(&self) -> Sqlite3xResult<i64> {
+        let wal_path = format!("{}-wal", self.path);
+        match std::fs::metadata(&wal_path) {
+            Ok(metadata) => Ok(metadata.len() as i64),
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(0),
+            Err(e) => Err(Sqlite3xError::Connection(format!("Failed to get WAL size: {}", e))),
+        }
     }
 
     pub fn set_partition_manager(&self, manager: Arc<super::partition::PartitionManager>) {
