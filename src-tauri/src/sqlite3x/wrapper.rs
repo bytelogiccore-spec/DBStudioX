@@ -201,6 +201,22 @@ impl Database {
         log::info!("Restore completed successfully from: {}", src_path);
         Ok(())
     }
+
+    /// Enable or disable statement caching via sqlite3x
+    pub fn set_cache_enabled(&self, enabled: bool) -> Sqlite3xResult<()> {
+        log::debug!("Setting cache enabled: {}", enabled);
+
+        let conn = self.connection.lock()
+            .map_err(|e| Sqlite3xError::Connection(format!("Lock error: {}", e)))?;
+
+        // Get raw handle and call FFI
+        unsafe {
+            let handle = conn.handle();
+            super::ffi::set_cache_enabled(handle as *mut std::ffi::c_void, enabled)?;
+        }
+
+        Ok(())
+    }
 }
 
 /// Helper to convert JSON params to Rusqlite values
