@@ -38,7 +38,7 @@ impl AppState {
     pub fn add_connection(
         &self,
         connection: DatabaseConnection,
-        db_handle: Database,
+        db_handle: Database
     ) -> Result<(), String> {
         let mut connections = self.connections.write();
         let mut handles = self.db_handles.write();
@@ -102,7 +102,11 @@ impl AppState {
     // ==================== Transaction Management ====================
 
     /// Add a new transaction
-    pub fn add_transaction(&self, connection_id: &str, transaction_id: &str) -> Result<(), String> {
+    pub fn add_transaction(
+        &self,
+        connection_id: &str,
+        transaction_id: &str,
+    ) -> Result<(), String> {
         if !self.has_connection(connection_id) {
             return Err(format!("Connection not found: {}", connection_id));
         }
@@ -158,7 +162,12 @@ impl AppState {
     }
 
     /// Update query statistics
-    pub fn record_query(&self, connection_id: &str, execution_time_ms: f64, cache_hit: bool) {
+    pub fn record_query(
+        &self,
+        connection_id: &str,
+        execution_time_ms: f64,
+        cache_hit: bool,
+    ) {
         let mut stats = self.query_stats.write();
 
         if let Some(s) = stats.get_mut(connection_id) {

@@ -38,11 +38,7 @@ pub fn emit_performance_update(app: &AppHandle, metrics: PerformanceMetrics) {
 }
 
 /// Start background performance monitoring
-pub async fn start_monitoring(
-    app: tauri::AppHandle,
-    state: std::sync::Arc<crate::state::AppState>,
-    interval_ms: u64,
-) {
+pub async fn start_monitoring(app: tauri::AppHandle, state: std::sync::Arc<crate::state::AppState>, interval_ms: u64) {
     log::info!("Performance monitoring started");
 
     let mut interval = tokio::time::interval(std::time::Duration::from_millis(interval_ms));

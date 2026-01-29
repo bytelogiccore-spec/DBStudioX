@@ -3,7 +3,7 @@
 //! Handles file dialogs and data export operations.
 
 use crate::commands::query::QueryResult;
-use crate::utils::{AppError, AppResult};
+use crate::utils::{AppResult, AppError};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use tauri_plugin_dialog::DialogExt;
@@ -54,14 +54,8 @@ pub async fn open_file_dialog(app: tauri::AppHandle) -> AppResult<Option<String>
 
 /// Open save file dialog for export
 #[tauri::command]
-pub async fn save_file_dialog(
-    app: tauri::AppHandle,
-    default_name: String,
-) -> AppResult<Option<String>> {
-    log::info!(
-        "Opening save file dialog with default name: {}",
-        default_name
-    );
+pub async fn save_file_dialog(app: tauri::AppHandle, default_name: String) -> AppResult<Option<String>> {
+    log::info!("Opening save file dialog with default name: {}", default_name);
 
     let file = app
         .dialog()
@@ -87,14 +81,8 @@ pub async fn save_file_dialog(
 
 /// Open save file dialog for creating a new database
 #[tauri::command]
-pub async fn create_database_dialog(
-    app: tauri::AppHandle,
-    default_name: String,
-) -> AppResult<Option<String>> {
-    log::info!(
-        "Opening create database dialog with default name: {}",
-        default_name
-    );
+pub async fn create_database_dialog(app: tauri::AppHandle, default_name: String) -> AppResult<Option<String>> {
+    log::info!("Opening create database dialog with default name: {}", default_name);
 
     let file = app
         .dialog()
@@ -119,23 +107,14 @@ pub async fn create_database_dialog(
 
 /// Export query result to file
 #[tauri::command]
-pub async fn export_query_result(
-    result: QueryResult,
-    format: String,
-    output_path: String,
-) -> AppResult<()> {
+pub async fn export_query_result(result: QueryResult, format: String, output_path: String) -> AppResult<()> {
     log::info!("Exporting query result to {} as {}", output_path, format);
 
     let content = match format.as_str() {
         "csv" => export_to_csv(&result)?,
         "json" => export_to_json(&result)?,
         "sql" => export_to_sql(&result)?,
-        _ => {
-            return Err(AppError::CommandError(format!(
-                "Unsupported export format: {}",
-                format
-            )))
-        }
+        _ => return Err(AppError::CommandError(format!("Unsupported export format: {}", format))),
     };
 
     std::fs::write(&output_path, content)
@@ -186,8 +165,7 @@ fn export_to_json(result: &QueryResult) -> AppResult<String> {
         })
         .collect();
 
-    serde_json::to_string_pretty(&rows)
-        .map_err(|e| AppError::SerializationError(format!("JSON serialization error: {}", e)))
+    serde_json::to_string_pretty(&rows).map_err(|e| AppError::SerializationError(format!("JSON serialization error: {}", e)))
 }
 
 fn export_to_sql(result: &QueryResult) -> AppResult<String> {
@@ -230,17 +208,11 @@ pub async fn list_directory(path: String) -> AppResult<Vec<FileEntry>> {
     let dir_path = PathBuf::from(&path);
 
     if !dir_path.exists() {
-        return Err(AppError::NotFound(format!(
-            "Directory does not exist: {}",
-            path
-        )));
+        return Err(AppError::NotFound(format!("Directory does not exist: {}", path)));
     }
 
     if !dir_path.is_dir() {
-        return Err(AppError::CommandError(format!(
-            "Path is not a directory: {}",
-            path
-        )));
+        return Err(AppError::CommandError(format!("Path is not a directory: {}", path)));
     }
 
     let mut entries = Vec::new();
@@ -248,41 +220,43 @@ pub async fn list_directory(path: String) -> AppResult<Vec<FileEntry>> {
     let read_dir = std::fs::read_dir(&dir_path)
         .map_err(|e| AppError::FsError(format!("Failed to read directory: {}", e)))?;
 
-    for entry in read_dir.flatten() {
-        let path = entry.path();
-        let metadata = entry.metadata().ok();
+    for entry in read_dir {
+        if let Ok(entry) = entry {
+            let path = entry.path();
+            let metadata = entry.metadata().ok();
 
-        let name = entry.file_name().to_string_lossy().to_string();
-        let is_dir = path.is_dir();
-        let size = metadata.as_ref().map(|m| m.len()).unwrap_or(0);
-        let modified = metadata.as_ref().and_then(|m| {
-            m.modified().ok().and_then(|t| {
-                t.duration_since(std::time::UNIX_EPOCH)
-                    .ok()
-                    .map(|d| d.as_secs())
-            })
-        });
-        let extension = if is_dir {
-            None
-        } else {
-            path.extension().map(|e| e.to_string_lossy().to_string())
-        };
+            let name = entry.file_name().to_string_lossy().to_string();
+            let is_dir = path.is_dir();
+            let size = metadata.as_ref().map(|m| m.len()).unwrap_or(0);
+            let modified = metadata.as_ref().and_then(|m| {
+                m.modified().ok().and_then(|t| {
+                    t.duration_since(std::time::UNIX_EPOCH).ok().map(|d| d.as_secs())
+                })
+            });
+            let extension = if is_dir {
+                None
+            } else {
+                path.extension().map(|e| e.to_string_lossy().to_string())
+            };
 
-        entries.push(FileEntry {
-            name,
-            path: path.to_string_lossy().to_string(),
-            is_dir,
-            size,
-            modified,
-            extension,
-        });
+            entries.push(FileEntry {
+                name,
+                path: path.to_string_lossy().to_string(),
+                is_dir,
+                size,
+                modified,
+                extension,
+            });
+        }
     }
 
     // Sort: directories first, then by name
-    entries.sort_by(|a, b| match (a.is_dir, b.is_dir) {
-        (true, false) => std::cmp::Ordering::Less,
-        (false, true) => std::cmp::Ordering::Greater,
-        _ => a.name.to_lowercase().cmp(&b.name.to_lowercase()),
+    entries.sort_by(|a, b| {
+        match (a.is_dir, b.is_dir) {
+            (true, false) => std::cmp::Ordering::Less,
+            (false, true) => std::cmp::Ordering::Greater,
+            _ => a.name.to_lowercase().cmp(&b.name.to_lowercase()),
+        }
     });
 
     Ok(entries)

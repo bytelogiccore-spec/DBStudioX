@@ -4,11 +4,11 @@
 
 pub mod database;
 pub mod file;
-pub mod migration;
-pub mod partition;
 pub mod query;
 pub mod schema;
-pub mod schema_management;
 pub mod stats;
 pub mod transaction;
 pub mod udf;
+pub mod partition;
+pub mod migration;
+pub mod schema_management;

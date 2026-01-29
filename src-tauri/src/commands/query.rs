@@ -1,5 +1,5 @@
 use crate::state::AppState;
-use crate::utils::{AppError, AppResult};
+use crate::utils::{AppResult, AppError};
 use serde::{Deserialize, Serialize};
 
 /// Query column info for frontend
@@ -32,8 +32,7 @@ pub async fn execute_query(
     log::info!("Executing query on {}: {}", connection_id, sql);
 
     // Get DB handle from state
-    let db_handle = state
-        .get_db_handle(&connection_id)
+    let db_handle = state.get_db_handle(&connection_id)
         .ok_or_else(|| AppError::NotFound(format!("Connection not found: {}", connection_id)))?;
 
     let start = std::time::Instant::now();
@@ -47,13 +46,10 @@ pub async fn execute_query(
     let result = if is_select {
         // Execute as query (returns rows)
         let db = db_handle.lock();
-        let query_result = db
-            .query(&sql)
+        let query_result = db.query(&sql)
             .map_err(|e| AppError::QueryError(format!("{:?}", e)))?;
 
-        let columns: Vec<ColumnInfo> = query_result
-            .columns
-            .iter()
+        let columns: Vec<ColumnInfo> = query_result.columns.iter()
             .zip(query_result.column_types.iter())
             .map(|(name, dtype)| ColumnInfo {
                 name: name.clone(),
@@ -77,8 +73,7 @@ pub async fn execute_query(
     } else {
         // Execute as statement (DDL, INSERT, UPDATE, DELETE, etc.)
         let db = db_handle.lock();
-        let affected = db
-            .execute(&sql)
+        let affected = db.execute(&sql)
             .map_err(|e| AppError::QueryError(format!("{:?}", e)))?;
 
         let duration = start.elapsed();
@@ -126,27 +121,21 @@ pub async fn explain_query(
 ) -> AppResult<String> {
     log::info!("Explaining query: {}", sql);
 
-    let db_handle = state
-        .get_db_handle(&connection_id)
+    let db_handle = state.get_db_handle(&connection_id)
         .ok_or_else(|| AppError::NotFound(format!("Connection not found: {}", connection_id)))?;
 
     let explain_sql = format!("EXPLAIN QUERY PLAN {}", sql);
 
     let db = db_handle.lock();
-    let result = db
-        .query(&explain_sql)
+    let result = db.query(&explain_sql)
         .map_err(|e| AppError::QueryError(format!("{:?}", e)))?;
 
     // Format the result as text
-    let plan = result
-        .rows
-        .iter()
-        .map(|row| {
-            row.iter()
-                .map(|v| v.to_string())
-                .collect::<Vec<_>>()
-                .join(" | ")
-        })
+    let plan = result.rows.iter()
+        .map(|row| row.iter()
+            .map(|v| v.to_string())
+            .collect::<Vec<_>>()
+            .join(" | "))
         .collect::<Vec<_>>()
         .join("\n");
 

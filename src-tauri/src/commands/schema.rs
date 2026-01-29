@@ -3,8 +3,9 @@
 //! Handles database schema inspection and metadata retrieval.
 
 use crate::state::AppState;
-use crate::utils::{AppError, AppResult};
+use crate::utils::{AppResult, AppError};
 use serde::{Deserialize, Serialize};
+
 
 /// Column information for frontend
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -75,14 +76,12 @@ pub async fn get_schema(
 ) -> AppResult<SchemaInfo> {
     log::info!("Getting schema for connection: {}", connection_id);
 
-    let db_handle = state
-        .get_db_handle(&connection_id)
+    let db_handle = state.get_db_handle(&connection_id)
         .ok_or_else(|| AppError::NotFound(format!("Connection not found: {}", connection_id)))?;
 
     // Use the wrapper's get_schema method
     let db = db_handle.lock();
-    let schema = db
-        .get_schema()
+    let schema = db.get_schema()
         .map_err(|e| AppError::QueryError(format!("{:?}", e)))?;
 
     // Convert wrapper types to frontend types with column information
@@ -91,8 +90,7 @@ pub async fn get_schema(
     for table in schema.tables.iter() {
         // Get column information for each table
         let pragma_sql = format!("PRAGMA table_info({})", table.name);
-        let result = db
-            .query(&pragma_sql)
+        let result = db.query(&pragma_sql)
             .map_err(|e| AppError::QueryError(format!("{:?}", e)))?;
 
         let mut columns = Vec::new();
@@ -133,9 +131,7 @@ pub async fn get_schema(
 
         // Get row count
         let count_sql = format!("SELECT COUNT(*) FROM \"{}\"", table.name);
-        let row_count = db
-            .query(&count_sql)
-            .ok()
+        let row_count = db.query(&count_sql).ok()
             .and_then(|r| r.rows.first().cloned())
             .and_then(|row| row.first().cloned())
             .and_then(|v| match v {
@@ -152,18 +148,14 @@ pub async fn get_schema(
         });
     }
 
-    let views: Vec<ViewInfo> = schema
-        .views
-        .iter()
+    let views: Vec<ViewInfo> = schema.views.iter()
         .map(|v| ViewInfo {
             name: v.name.clone(),
             sql: v.sql.clone().unwrap_or_default(),
         })
         .collect();
 
-    let indexes: Vec<IndexInfo> = schema
-        .indexes
-        .iter()
+    let indexes: Vec<IndexInfo> = schema.indexes.iter()
         .map(|i| IndexInfo {
             name: i.name.clone(),
             table_name: i.table_name.clone(),
@@ -172,9 +164,7 @@ pub async fn get_schema(
         })
         .collect();
 
-    let triggers: Vec<TriggerInfo> = schema
-        .triggers
-        .iter()
+    let triggers: Vec<TriggerInfo> = schema.triggers.iter()
         .map(|t| TriggerInfo {
             name: t.name.clone(),
             table_name: t.table_name.clone(),
@@ -213,16 +203,14 @@ pub async fn get_table_info(
         connection_id
     );
 
-    let db_handle = state
-        .get_db_handle(&connection_id)
+    let db_handle = state.get_db_handle(&connection_id)
         .ok_or_else(|| AppError::NotFound(format!("Connection not found: {}", connection_id)))?;
 
     let db = db_handle.lock();
 
     // Query table columns using PRAGMA
     let pragma_sql = format!("PRAGMA table_info({})", table_name);
-    let result = db
-        .query(&pragma_sql)
+    let result = db.query(&pragma_sql)
         .map_err(|e| AppError::QueryError(format!("{:?}", e)))?;
 
     let mut columns = Vec::new();
