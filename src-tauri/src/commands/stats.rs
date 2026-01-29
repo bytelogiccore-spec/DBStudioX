@@ -103,8 +103,13 @@ pub async fn set_cache_enabled(
         return Err(AppError::NotFound(format!("Connection not found: {}", connection_id)));
     }
 
-    // TODO: Implement using sqlite3x
-    // sqlite3x_database_set_cache_enabled(handle, enabled)
+    if let Some(db_handle) = state.get_db_handle(&connection_id) {
+        let db = db_handle.lock();
+        db.set_cache_enabled(enabled)
+            .map_err(|e| AppError::CommandError(e.to_string()))?;
+    } else {
+        return Err(AppError::NotFound(format!("Connection handle not found: {}", connection_id)));
+    }
 
     Ok(())
 }
