@@ -3,7 +3,7 @@
 //! Handles database connection lifecycle operations.
 
 use crate::state::AppState;
-use crate::utils::{AppResult, AppError};
+use crate::utils::{AppError, AppResult};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -52,8 +52,9 @@ pub async fn connect_database(
     };
 
     // Store connection and handle in app state
-    state.add_connection(connection.clone(), db)
-        .map_err(|e| AppError::InternalError(e))?;
+    state
+        .add_connection(connection.clone(), db)
+        .map_err(AppError::InternalError)?;
 
     // Setup data change hooks
     crate::events::data_change::setup_hooks(&app, &state, &connection_id);
@@ -70,8 +71,9 @@ pub async fn disconnect_database(
 ) -> AppResult<()> {
     log::info!("Disconnecting from database: {}", connection_id);
 
-    state.remove_connection(&connection_id)
-        .map_err(|e| AppError::InternalError(e))?;
+    state
+        .remove_connection(&connection_id)
+        .map_err(AppError::InternalError)?;
 
     log::info!("Disconnected from database: {}", connection_id);
 
@@ -93,8 +95,9 @@ pub async fn backup_database(
 ) -> AppResult<()> {
     log::info!("Backing up database {} to {}", connection_id, dest_path);
 
-    let db_handle = state.get_db_handle(&connection_id)
-        .ok_or_else(|| AppError::InternalError(format!("Connection not found: {}", connection_id)))?;
+    let db_handle = state.get_db_handle(&connection_id).ok_or_else(|| {
+        AppError::InternalError(format!("Connection not found: {}", connection_id))
+    })?;
 
     let db = db_handle.lock();
     db.backup_to_file(&dest_path)
@@ -111,8 +114,9 @@ pub async fn restore_database(
 ) -> AppResult<()> {
     log::info!("Restoring database {} from {}", connection_id, src_path);
 
-    let db_handle = state.get_db_handle(&connection_id)
-        .ok_or_else(|| AppError::InternalError(format!("Connection not found: {}", connection_id)))?;
+    let db_handle = state.get_db_handle(&connection_id).ok_or_else(|| {
+        AppError::InternalError(format!("Connection not found: {}", connection_id))
+    })?;
 
     let db = db_handle.lock();
     db.restore_from_file(&src_path)

@@ -1,8 +1,8 @@
 // Sharding Index Strategy Module
 // Provides higher-level indexing abstractions for sharded databases.
 
-use crate::sqlite3x::errors::{Sqlite3xError as Sqlite3Error, Sqlite3xResult as Sqlite3Result};
 use super::PartitionManager;
+use crate::sqlite3x::errors::{Sqlite3xError as Sqlite3Error, Sqlite3xResult as Sqlite3Result};
 use std::sync::Arc;
 
 /// Global Index Strategy
@@ -25,12 +25,14 @@ impl GlobalIndexManager {
         // SQL to check for existing value
         let sql = format!(
             "SELECT COUNT(*) as cnt FROM {} WHERE {} = '{}'",
-            table_name, column_name, value.replace('\'', "''")
+            table_name,
+            column_name,
+            value.replace('\'', "''")
         );
 
         // Query all shards
         let results = self.partition_manager.query_partitioned(&sql)?;
-        
+
         // Aggregate results
         let mut total_count: u64 = 0;
         for row in results.rows {
@@ -58,9 +60,10 @@ impl GlobalIndexManager {
         value: &str,
     ) -> Sqlite3Result<usize> {
         if !self.check_global_uniqueness(table_name, unique_column, value)? {
-            return Err(Sqlite3Error::Query(
-                format!("Global uniqueness violation for column '{}' with value '{}'", unique_column, value)
-            ));
+            return Err(Sqlite3Error::Query(format!(
+                "Global uniqueness violation for column '{}' with value '{}'",
+                unique_column, value
+            )));
         }
 
         self.partition_manager.execute_partitioned(sql)

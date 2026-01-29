@@ -2,9 +2,9 @@
 //!
 //! Shared utilities for the application.
 
-mod serialization;
 mod error;
 pub mod schema_diff;
+mod serialization;
 
-pub use serialization::*;
 pub use error::*;
+pub use serialization::*;

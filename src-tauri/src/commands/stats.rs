@@ -3,9 +3,8 @@
 //! Handles database statistics and cache management.
 
 use crate::state::AppState;
-use crate::utils::{AppResult, AppError};
+use crate::utils::{AppError, AppResult};
 use serde::{Deserialize, Serialize};
-
 
 /// Database statistics
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -35,7 +34,10 @@ pub async fn get_stats(
 
     // Verify connection exists
     if !state.has_connection(&connection_id) {
-        return Err(AppError::NotFound(format!("Connection not found: {}", connection_id)));
+        return Err(AppError::NotFound(format!(
+            "Connection not found: {}",
+            connection_id
+        )));
     }
 
     // TODO: Implement actual stats retrieval using sqlite3x
@@ -72,7 +74,10 @@ pub async fn clear_cache(
 
     // Verify connection exists
     if !state.has_connection(&connection_id) {
-        return Err(AppError::NotFound(format!("Connection not found: {}", connection_id)));
+        return Err(AppError::NotFound(format!(
+            "Connection not found: {}",
+            connection_id
+        )));
     }
 
     // TODO: Implement using sqlite3x
@@ -100,7 +105,10 @@ pub async fn set_cache_enabled(
 
     // Verify connection exists
     if !state.has_connection(&connection_id) {
-        return Err(AppError::NotFound(format!("Connection not found: {}", connection_id)));
+        return Err(AppError::NotFound(format!(
+            "Connection not found: {}",
+            connection_id
+        )));
     }
 
     // TODO: Implement using sqlite3x

@@ -10,7 +10,7 @@ use tauri::AppHandle;
 /// Setup all event handlers
 pub fn setup_event_handlers(app: &AppHandle, state: std::sync::Arc<crate::state::AppState>) {
     log::info!("Setting up event handlers");
-    
+
     // Start performance monitoring in a background task
     let app_clone = app.clone();
     let state_clone = state.clone();

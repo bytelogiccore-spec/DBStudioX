@@ -15,18 +15,20 @@ use tauri::Manager;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_log::Builder::default()
-            .level(log::LevelFilter::Info)
-            .build())
+        .plugin(
+            tauri_plugin_log::Builder::default()
+                .level(log::LevelFilter::Info)
+                .build(),
+        )
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_fs::init())
         .setup(|app| {
             // Initialize application state as a shared Arc
             let app_state = std::sync::Arc::new(AppState::new());
-            
+
             // Manage the state for Tauri commands
-            // Tauri will automatically handle the Arc if we specify the type correctly, 
+            // Tauri will automatically handle the Arc if we specify the type correctly,
             // but for simplicity and clarity with the background tasks, we manage the Arc itself.
             app.manage(app_state.clone());
 

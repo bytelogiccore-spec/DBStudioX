@@ -1,9 +1,9 @@
 // 샤드 메타데이터 영속성 모듈
 // 파티셔닝 설정을 JSON 파일로 저장/로드합니다.
 
-use serde::{Deserialize, Serialize};
-use crate::sqlite3x::errors::{Sqlite3xError as Sqlite3Error, Sqlite3xResult as Sqlite3Result};
 use super::PartitionConfig;
+use crate::sqlite3x::errors::{Sqlite3xError as Sqlite3Error, Sqlite3xResult as Sqlite3Result};
+use serde::{Deserialize, Serialize};
 
 /// 파티션 메타데이터
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -25,7 +25,7 @@ impl PartitionMetadata {
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap_or(std::time::Duration::from_secs(0))
             .as_secs();
-        
+
         Self {
             version: 1,
             config,
@@ -37,32 +37,27 @@ impl PartitionMetadata {
     /// 메타데이터 저장
     pub fn save(&self, path: &str) -> Sqlite3Result<()> {
         let json = serde_json::to_string_pretty(self)
-            .map_err(|e| Sqlite3Error::Query(
-                format!("Failed to serialize metadata: {}", e)
-            ))?;
-        
-        std::fs::write(path, json)
-            .map_err(|e| Sqlite3Error::Io(e))?;
-        
+            .map_err(|e| Sqlite3Error::Query(format!("Failed to serialize metadata: {}", e)))?;
+
+        std::fs::write(path, json).map_err(Sqlite3Error::Io)?;
+
         Ok(())
     }
 
     /// 메타데이터 로드
     pub fn load(path: &str) -> Sqlite3Result<Self> {
-        let content = std::fs::read_to_string(path)
-            .map_err(|e| Sqlite3Error::Io(e))?;
-        
+        let content = std::fs::read_to_string(path).map_err(Sqlite3Error::Io)?;
+
         let metadata: Self = serde_json::from_str(&content)
-            .map_err(|e| Sqlite3Error::Query(
-                format!("Failed to parse metadata: {}", e)
-            ))?;
-        
+            .map_err(|e| Sqlite3Error::Query(format!("Failed to parse metadata: {}", e)))?;
+
         if metadata.version > 1 {
-            return Err(Sqlite3Error::Query(
-                format!("Unsupported metadata version: {}", metadata.version)
-            ));
+            return Err(Sqlite3Error::Query(format!(
+                "Unsupported metadata version: {}",
+                metadata.version
+            )));
         }
-        
+
         Ok(metadata)
     }
 

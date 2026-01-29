@@ -3,7 +3,7 @@
 //! Handles database transaction lifecycle.
 
 use crate::state::AppState;
-use crate::utils::{AppResult, AppError};
+use crate::utils::{AppError, AppResult};
 use uuid::Uuid;
 
 /// Begin a new transaction
@@ -16,7 +16,10 @@ pub async fn begin_transaction(
 
     // Verify connection exists
     if !state.has_connection(&connection_id) {
-        return Err(AppError::NotFound(format!("Connection not found: {}", connection_id)));
+        return Err(AppError::NotFound(format!(
+            "Connection not found: {}",
+            connection_id
+        )));
     }
 
     // Generate transaction ID
@@ -24,8 +27,9 @@ pub async fn begin_transaction(
 
     // TODO: Actually begin transaction using sqlite3x
 
-    state.add_transaction(&connection_id, &transaction_id)
-        .map_err(|e| AppError::InternalError(e))?;
+    state
+        .add_transaction(&connection_id, &transaction_id)
+        .map_err(AppError::InternalError)?;
 
     log::info!("Transaction started: {}", transaction_id);
 
@@ -42,8 +46,9 @@ pub async fn commit_transaction(
 
     // TODO: Actually commit transaction using sqlite3x
 
-    state.remove_transaction(&transaction_id)
-        .map_err(|e| AppError::InternalError(e))?;
+    state
+        .remove_transaction(&transaction_id)
+        .map_err(AppError::InternalError)?;
 
     log::info!("Transaction committed: {}", transaction_id);
 
@@ -60,8 +65,9 @@ pub async fn rollback_transaction(
 
     // TODO: Actually rollback transaction using sqlite3x
 
-    state.remove_transaction(&transaction_id)
-        .map_err(|e| AppError::InternalError(e))?;
+    state
+        .remove_transaction(&transaction_id)
+        .map_err(AppError::InternalError)?;
 
     log::info!("Transaction rolled back: {}", transaction_id);
 

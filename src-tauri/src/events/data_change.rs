@@ -2,9 +2,9 @@
 //!
 //! Monitors and emits data change events to the frontend.
 
+use rusqlite::hooks::Action;
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Emitter};
-use rusqlite::hooks::Action;
 
 /// Data change event payload
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -35,30 +35,39 @@ pub fn setup_hooks(app: &AppHandle, state: &crate::state::AppState, connection_i
 
     let app_clone = std::panic::AssertUnwindSafe(app.clone());
     let db = db_handle.lock();
-    
-    if let Err(e) = db.on_update(move |action: Action, _db_name: &str, table: &str, rowid: i64| {
-        let action_str = format!("{:?}", action);
-        let operation = match action_str.as_str() {
-            "Insert" => "INSERT",
-            "Update" => "UPDATE",
-            "Delete" => "DELETE",
-            _ => "UNKNOWN",
-        };
 
-        let event = DataChangeEvent {
-            table: table.to_string(),
-            operation: operation.to_string(),
-            rowid,
-            timestamp: chrono::Utc::now().to_rfc3339(),
-        };
+    if let Err(e) = db.on_update(
+        move |action: Action, _db_name: &str, table: &str, rowid: i64| {
+            let action_str = format!("{:?}", action);
+            let operation = match action_str.as_str() {
+                "Insert" => "INSERT",
+                "Update" => "UPDATE",
+                "Delete" => "DELETE",
+                _ => "UNKNOWN",
+            };
 
-        let app = &*app_clone;
-        if let Err(e) = app.emit("db:data_changed", &event) {
-            log::error!("Failed to emit data change event: {}", e);
-        }
-    }) {
-        log::error!("Failed to register update hook for {}: {:?}", connection_id, e);
+            let event = DataChangeEvent {
+                table: table.to_string(),
+                operation: operation.to_string(),
+                rowid,
+                timestamp: chrono::Utc::now().to_rfc3339(),
+            };
+
+            let app = &*app_clone;
+            if let Err(e) = app.emit("db:data_changed", &event) {
+                log::error!("Failed to emit data change event: {}", e);
+            }
+        },
+    ) {
+        log::error!(
+            "Failed to register update hook for {}: {:?}",
+            connection_id,
+            e
+        );
     } else {
-        log::info!("Data change hooks established for connection: {}", connection_id);
+        log::info!(
+            "Data change hooks established for connection: {}",
+            connection_id
+        );
     }
 }
