@@ -178,6 +178,15 @@ async fn import_csv(
         .map_err(|e| AppError::QueryError(format!("Failed to begin transaction: {:?}", e)))?;
 
     let mut count = 0;
+
+    // Pre-calculate SQL
+    let placeholders: Vec<String> = (0..columns.len()).map(|_| "?".to_string()).collect();
+    let row_sql = format!(
+        "INSERT INTO \"{}\" ({}) VALUES ({})",
+        table_name,
+        columns.join(", "),
+        placeholders.join(", ")
+    );
     
     for result in reader.records() {
         let record = result.map_err(|e| AppError::IoError(format!("Invalid CSV record: {}", e)))?;
@@ -186,16 +195,8 @@ async fn import_csv(
         for field in record.iter() {
             params.push(serde_json::Value::String(field.to_string()));
         }
-
-        let placeholders: Vec<String> = (0..columns.len()).map(|_| "?".to_string()).collect();
-        let row_sql = format!(
-            "INSERT INTO \"{}\" ({}) VALUES ({})",
-            table_name,
-            columns.join(", "),
-            placeholders.join(", ")
-        );
         
-        db.execute_with_params(&row_sql, params)
+        db.execute_cached(&row_sql, params)
             .map_err(|e| AppError::QueryError(format!("Insert failed at row {}: {:?}", count + 1, e)))?;
             
         count += 1;
@@ -212,29 +213,6 @@ async fn import_json(
     table_name: &str,
     file_path: &str,
 ) -> AppResult<usize> {
-    // ...
-    // Reuse existing implementation, just put it here for completeness or rely on git applying changes correctly
-    // Since this is replace tool, I need to provide full content for changed blocks or specific ranges.
-    // I will use StartLine/EndLine logic to be safe, but replacing 35-73 (data functions) and adding new ones at the end.
-    // Actually, I can replace the WHOLE commands logic if I want.
-    // Let's replace lines 35-73 with new match blocks, AND append new functions.
-    // But append requires knowing end of file. I will use `replace_file_content` targeting the top match logic and then use `write_to_file` or another replaces.
-    // Wait, replacing lines 35-40 and 62-67 is feasible. And adding functions.
-    // But adding new functions at the end requires finding end of file.
-    
-    // Let's replace the whole file from `MigrationStats` downwards to be safe and clean.
-    // But `import_csv` and `import_json` are long.
-    // I will use a precise replace for the `match` blocks and append functions at the end of the file.
-    // Actually, appending via replace is tricky (TargetContent needs to be known).
-    // I'll assume `import_json` ends at line 231.
-    // I'll replace from `import_csv` start (line 75) to the end of file.
-    
-    // Oh wait, I can just replace everything from line 35 to the end if I paste everything back.
-    // Let's do that.
-    
-    // Wait, I need to re-implement `import_csv` and others to include them in the replace block if I wipe them out.
-    // That's fine.
-    
     let file = File::open(file_path)
         .map_err(|e| AppError::IoError(format!("Failed to open JSON: {}", e)))?;
     let reader = BufReader::new(file);
@@ -259,6 +237,15 @@ async fn import_json(
         .ok_or_else(|| AppError::BadRequest("JSON array members must be objects".to_string()))?;
         
     let columns: Vec<String> = first_obj.keys().cloned().collect();
+
+    // Pre-calculate SQL
+    let placeholders: Vec<String> = (0..columns.len()).map(|_| "?".to_string()).collect();
+    let row_sql = format!(
+        "INSERT INTO \"{}\" ({}) VALUES ({})",
+        table_name,
+        columns.join(", "),
+        placeholders.join(", ")
+    );
     
     for item in array {
         let obj = item.as_object()
@@ -268,16 +255,8 @@ async fn import_json(
         for col in &columns {
             params.push(obj.get(col).cloned().unwrap_or(serde_json::Value::Null));
         }
-
-        let placeholders: Vec<String> = (0..columns.len()).map(|_| "?".to_string()).collect();
-        let row_sql = format!(
-            "INSERT INTO \"{}\" ({}) VALUES ({})",
-            table_name,
-            columns.join(", "),
-            placeholders.join(", ")
-        );
         
-        db.execute_with_params(&row_sql, params)
+        db.execute_cached(&row_sql, params)
             .map_err(|e| AppError::QueryError(format!("Insert failed at row {}: {:?}", count + 1, e)))?;
             
         count += 1;
@@ -447,15 +426,16 @@ pub async fn copy_table(
             
         let db = target_db_handle.lock();
         db.execute("BEGIN TRANSACTION").ok(); // Ignore error if already in tx (unlikely)
+
+        // Pre-calculate SQL
+        let placeholders: Vec<String> = (0..source_data.columns.len()).map(|_| "?".to_string()).collect();
+        let insert_sql = format!(
+            "INSERT INTO \"{}\" ({}) VALUES ({})",
+            target_table, columns_str, placeholders.join(", ")
+        );
         
         for row in source_data.rows {
-            let placeholders: Vec<String> = (0..source_data.columns.len()).map(|_| "?".to_string()).collect();
-            let insert_sql = format!(
-                "INSERT INTO \"{}\" ({}) VALUES ({})",
-                target_table, columns_str, placeholders.join(", ")
-            );
-            
-            if let Err(e) = db.execute_with_params(&insert_sql, row) {
+            if let Err(e) = db.execute_cached(&insert_sql, row) {
                 log::error!("Failed to insert row: {:?}", e);
                 db.execute("ROLLBACK").ok();
                 return Err(AppError::QueryError(format!("Copy failed at row {}: {:?}", rows_processed + 1, e)));

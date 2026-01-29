@@ -59,6 +59,26 @@ impl Database {
         Ok(affected)
     }
 
+    /// Execute a SQL statement using a cached prepared statement
+    pub fn execute_cached(&self, sql: &str, params: Vec<serde_json::Value>) -> Sqlite3xResult<usize> {
+        log::debug!("Executing cached SQL: {}", sql);
+
+        let conn = self.connection.lock()
+            .map_err(|e| Sqlite3xError::Connection(format!("Lock error: {}", e)))?;
+
+        let sqlite_params = json_params_to_sqlite(params);
+        let params_refs: Vec<&dyn rusqlite::ToSql> = sqlite_params.iter().map(|p| p as &dyn rusqlite::ToSql).collect();
+
+        let mut stmt = conn.prepare_cached(sql)
+             .map_err(|e| Sqlite3xError::Query(format!("Prepare cached error: {}", e)))?;
+
+        let affected = stmt.execute(&params_refs[..])
+            .map_err(|e| Sqlite3xError::Query(format!("Execute error: {}", e)))?;
+
+        log::debug!("Affected rows: {}", affected);
+        Ok(affected)
+    }
+
     /// Execute a batch of SQL statements (e.g. valid dump)
     pub fn execute_batch(&self, sql: &str) -> Sqlite3xResult<()> {
         log::debug!("Executing Batch SQL");
