@@ -165,12 +165,7 @@ async fn import_csv(
         .map_err(|e| AppError::IoError(format!("Failed to read headers: {}", e)))?
         .clone();
 
-    // Prepare insert statement
-    // INSERT INTO table (col1, col2) VALUES (?, ?)
     let columns: Vec<&str> = headers.iter().collect();
-    // let placeholders: Vec<&str> = vec!["?"; columns.len()]; // Unused if manual format
-    
-    // ... (rest of CSV logic)
     
     let db = db_handle.lock();
     
