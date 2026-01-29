@@ -204,27 +204,27 @@ fn export_to_sql(result: &QueryResult) -> AppResult<String> {
 #[tauri::command]
 pub async fn list_directory(path: String) -> AppResult<Vec<FileEntry>> {
     log::info!("Listing directory: {}", path);
-    
-    let dir_path = PathBuf::from(&path);
-    
-    if !dir_path.exists() {
-        return Err(AppError::NotFound(format!("Directory does not exist: {}", path)));
-    }
-    
-    if !dir_path.is_dir() {
-        return Err(AppError::CommandError(format!("Path is not a directory: {}", path)));
-    }
-    
-    let mut entries = Vec::new();
-    
-    let read_dir = std::fs::read_dir(&dir_path)
-        .map_err(|e| AppError::FsError(format!("Failed to read directory: {}", e)))?;
-    
-    for entry in read_dir {
-        if let Ok(entry) = entry {
+
+    tokio::task::spawn_blocking(move || {
+        let dir_path = PathBuf::from(&path);
+
+        if !dir_path.exists() {
+            return Err(AppError::NotFound(format!("Directory does not exist: {}", path)));
+        }
+
+        if !dir_path.is_dir() {
+            return Err(AppError::CommandError(format!("Path is not a directory: {}", path)));
+        }
+
+        let mut entries = Vec::new();
+
+        let read_dir = std::fs::read_dir(&dir_path)
+            .map_err(|e| AppError::FsError(format!("Failed to read directory: {}", e)))?;
+
+        for entry in read_dir.flatten() {
             let path = entry.path();
             let metadata = entry.metadata().ok();
-            
+
             let name = entry.file_name().to_string_lossy().to_string();
             let is_dir = path.is_dir();
             let size = metadata.as_ref().map(|m| m.len()).unwrap_or(0);
@@ -238,7 +238,7 @@ pub async fn list_directory(path: String) -> AppResult<Vec<FileEntry>> {
             } else {
                 path.extension().map(|e| e.to_string_lossy().to_string())
             };
-            
+
             entries.push(FileEntry {
                 name,
                 path: path.to_string_lossy().to_string(),
@@ -248,18 +248,20 @@ pub async fn list_directory(path: String) -> AppResult<Vec<FileEntry>> {
                 extension,
             });
         }
-    }
-    
-    // Sort: directories first, then by name
-    entries.sort_by(|a, b| {
-        match (a.is_dir, b.is_dir) {
-            (true, false) => std::cmp::Ordering::Less,
-            (false, true) => std::cmp::Ordering::Greater,
-            _ => a.name.to_lowercase().cmp(&b.name.to_lowercase()),
-        }
-    });
-    
-    Ok(entries)
+
+        // Sort: directories first, then by name
+        entries.sort_by(|a, b| {
+            match (a.is_dir, b.is_dir) {
+                (true, false) => std::cmp::Ordering::Less,
+                (false, true) => std::cmp::Ordering::Greater,
+                _ => a.name.to_lowercase().cmp(&b.name.to_lowercase()),
+            }
+        });
+
+        Ok(entries)
+    })
+    .await
+    .map_err(|e| AppError::InternalError(format!("Task join error: {}", e)))?
 }
 
 /// Get available drives (Windows) or mount points
